@@ -1,0 +1,23 @@
+<!doctype html><html lang="fr-BE"><head><meta charset="utf-8"><title>Matheasy — guide d'installation</title><style>
+body{font-family:'Segoe UI',Arial,sans-serif;max-width:780px;margin:24px auto;padding:0 16px;color:#1a1a1a;line-height:1.5;font-size:16px}
+h1{color:#0A9370;border-left:6px solid #0A9370;padding-left:10px}h2{color:#0A9370;margin-top:28px}
+.note{background:#FFFDE7;border-left:4px solid #F97316;padding:8px 12px;margin:12px 0}
+.ok{background:#E1F5EE;border-left:4px solid #0A9370;padding:8px 12px;margin:12px 0}
+code,kbd{background:#f1f1f1;padding:1px 5px;border-radius:3px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#E1F5EE}
+footer{margin-top:36px;font-size:13px;color:#666;border-top:1px solid #ddd;padding-top:8px}img.logo{height:36px}
+</style></head><body>
+<img class="logo" src="plai-logo.jpg" alt="PLAI"><h1>Matheasy : installer le plugin</h1>
+<p>Matheasy est un plugin gratuit pour <strong>ONLYOFFICE Desktop Editors</strong> (Windows). Il permet d'écrire des formules de mathématiques comme dans MathType : fenêtre de saisie avec palettes, formules insérées comme équations ONLYOFFICE modifiables.</p>
+<h2>Installation (à faire une fois, puis à chaque nouvelle version)</h2>
+<ol>
+<li>Va sur <code>https://github.com/jfb4plai/Matheasy</code> → bouton vert <strong>Code</strong> → <strong>Download ZIP</strong>.</li>
+<li>Extrais le ZIP (clic droit → Extraire tout).</li>
+<li>Dans le dossier extrait, ouvre <code>tools</code> et double-clique sur <strong><code>build-plugin.bat</code></strong>. Il crée le fichier <code>dist\matheasy.plugin</code>.</li>
+<li>Dans ONLYOFFICE : onglet <strong>Plugins</strong> → <strong>Gestionnaire de plugins</strong>. Si une ancienne version de Matheasy est présente, supprime-la.</li>
+<li>Clique sur <strong>Installer le plugin manuellement</strong> et choisis <code>dist\matheasy.plugin</code>.</li>
+<li>Ouvre un document (.docx), puis <strong>Plugins → Matheasy</strong>. Le panneau s'ouvre à droite.</li>
+</ol>
+<div class="note">Une fenêtre Windows « Ouvrir avec » ou une erreur de script PowerShell ? Le fichier <code>build-plugin.bat</code> contourne déjà la restriction : utilise-le plutôt que le script <code>.ps1</code>.</div>
+<h2>Pour les élèves</h2>
+<p>Les élèves n'ont rien d'autre à installer que le plugin, et ONLYOFFICE. Les formules d'un document créé avec Matheasy sont des équations ONLYOFFICE ordinaires : elles s'affichent même sans le plugin, mais il faut le plugin pour les modifier avec la fenêtre Matheasy.</p>
+<footer>Matheasy — Jean-François Beguin, Référent numérique, PLAI · https://jfb4plai.com · Code sous licence PolyForm Noncommercial 1.0.0 · Logo PLAI : tous droits réservés.</footer></body></html>

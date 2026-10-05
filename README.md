@@ -47,3 +47,9 @@ Résultat : `dist/matheasy.plugin`, à ajouter dans ONLYOFFICE (onglet Plugins).
 - **Logo et identité visuelle PLAI** : tous droits réservés (voir `LICENSE-CONTENT.md`).
 
 Auteur : Jean-François Beguin, Référent numérique, https://jfb4plai.com
+
+
+## Guides
+
+- [Installation](docs/guide-installation.html)
+- [Mode d'emploi](docs/mode-emploi.html)
