@@ -1,0 +1,22 @@
+[
+  {"id":"AN01","theme":"analyse","label":"limite","latex":"\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1"},
+  {"id":"AN02","theme":"analyse","label":"intégrale définie","latex":"\\int_{a}^{b} f(x)\\,dx = F(b) - F(a)"},
+  {"id":"AN03","theme":"analyse","label":"dérivée","latex":"f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"},
+  {"id":"AN04","theme":"analyse","label":"somme","latex":"\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}"},
+  {"id":"AN05","theme":"analyse","label":"dérivée partielle","latex":"\\frac{\\partial f}{\\partial x}"},
+  {"id":"AL01","theme":"algèbre","label":"formule du second degré","latex":"x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}"},
+  {"id":"AL02","theme":"algèbre","label":"matrice 2x2","latex":"\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"},
+  {"id":"AL03","theme":"algèbre","label":"déterminant","latex":"\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix} = ad - bc"},
+  {"id":"AL04","theme":"algèbre","label":"système","latex":"\\begin{cases} x + y = 3 \\\\ x - y = 1 \\end{cases}"},
+  {"id":"AL05","theme":"algèbre","label":"racine n-ième","latex":"\\sqrt[n]{a^m} = a^{m/n}"},
+  {"id":"GE01","theme":"géométrie","label":"vecteur","latex":"\\overrightarrow{AB} \\cdot \\overrightarrow{AC} = \\|AB\\| \\|AC\\| \\cos\\theta"},
+  {"id":"GE02","theme":"géométrie","label":"trigonométrie","latex":"\\sin^2 x + \\cos^2 x = 1"},
+  {"id":"PR01","theme":"probabilités","label":"combinaison","latex":"\\binom{n}{k} = \\frac{n!}{k!(n-k)!}"},
+  {"id":"PR02","theme":"probabilités","label":"probabilité conditionnelle","latex":"P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)}"},
+  {"id":"EN01","theme":"ensembles","label":"ensemble et quantificateurs","latex":"\\forall x \\in \\mathbb{R},\\ \\exists y \\in \\mathbb{N} : y > x"},
+  {"id":"AN06","theme":"annotations","label":"accolade avec légende","latex":"\\underbrace{a + b + c}_{\\text{somme}}"},
+  {"id":"AN07","theme":"annotations","label":"terme barré","latex":"\\cancel{x} + 1 = \\cancel{x} + 2"},
+  {"id":"AN08","theme":"annotations","label":"couleur sur une partie","latex":"x^2 + \\color{red}{2x} + 1"},
+  {"id":"AN09","theme":"annotations","label":"résultat encadré","latex":"\\boxed{x = 3}"},
+  {"id":"AN10","theme":"annotations","label":"résolution alignée","latex":"\\begin{aligned} 2x + 1 &= 7 \\\\ 2x &= 6 \\\\ x &= 3 \\end{aligned}"}
+]
