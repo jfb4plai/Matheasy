@@ -1,0 +1,74 @@
+[
+ {
+  "id": "GE01a",
+  "label": "vecteur \\vec",
+  "format": "latex",
+  "text": "\\vec{AB} \\cdot \\vec{AC} = \\|AB\\| \\|AC\\| \\cos\\theta"
+ },
+ {
+  "id": "GE01b",
+  "label": "vecteur \\overset",
+  "format": "latex",
+  "text": "\\overset{\\rightarrow}{AB} \\cdot \\overset{\\rightarrow}{AC}"
+ },
+ {
+  "id": "GE01c",
+  "label": "vecteur MathML, flèche sur un bloc",
+  "format": "mathml",
+  "text": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><mover accent=\"true\"><mi>AB</mi><mo stretchy=\"true\">&#x2192;</mo></mover><mo>&#x22C5;</mo><mover accent=\"true\"><mi>AC</mi><mo stretchy=\"true\">&#x2192;</mo></mover></mrow></math>"
+ },
+ {
+  "id": "GE01d",
+  "label": "vecteur Unicode \\vec(AB)",
+  "format": "unicode",
+  "text": "\\vec(AB)⋅\\vec(AC)"
+ },
+ {
+  "id": "AN07a",
+  "label": "barré horizontal",
+  "format": "mathml",
+  "text": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><menclose notation=\"horizontalstrike\"><mi>x</mi></menclose><mo>+</mo><mn>1</mn><mo>=</mo><menclose notation=\"horizontalstrike\"><mi>x</mi></menclose><mo>+</mo><mn>2</mn></mrow></math>"
+ },
+ {
+  "id": "AN07b",
+  "label": "barré diagonale descendante",
+  "format": "mathml",
+  "text": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><menclose notation=\"downdiagonalstrike\"><mi>x</mi></menclose><mo>+</mo><mn>1</mn><mo>=</mo><menclose notation=\"downdiagonalstrike\"><mi>x</mi></menclose><mo>+</mo><mn>2</mn></mrow></math>"
+ },
+ {
+  "id": "AN07c",
+  "label": "barré croix",
+  "format": "mathml",
+  "text": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><menclose notation=\"updiagonalstrike downdiagonalstrike\"><mi>x</mi></menclose><mo>+</mo><mn>1</mn><mo>=</mo><menclose notation=\"updiagonalstrike downdiagonalstrike\"><mi>x</mi></menclose><mo>+</mo><mn>2</mn></mrow></math>"
+ },
+ {
+  "id": "AN07d",
+  "label": "barré Unicode \\strikebltr",
+  "format": "unicode",
+  "text": "\\strikebltr(x)+1=\\strikebltr(x)+2"
+ },
+ {
+  "id": "AN08a",
+  "label": "couleur mathcolor sur mn/mi",
+  "format": "mathml",
+  "text": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn mathcolor=\"#FF0000\">2</mn><mi mathcolor=\"#FF0000\">x</mi><mo>+</mo><mn>1</mn></mrow></math>"
+ },
+ {
+  "id": "AN08b",
+  "label": "couleur mstyle hexadécimal",
+  "format": "mathml",
+  "text": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mstyle mathcolor=\"#FF0000\"><mrow><mn>2</mn><mi>x</mi></mrow></mstyle><mo>+</mo><mn>1</mn></mrow></math>"
+ },
+ {
+  "id": "AN08c",
+  "label": "couleur LaTeX \\textcolor",
+  "format": "latex",
+  "text": "x^2 + \\textcolor{red}{2x} + 1"
+ },
+ {
+  "id": "AN08d",
+  "label": "couleur MathML attribut style",
+  "format": "mathml",
+  "text": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mrow style=\"color:#FF0000\"><mn>2</mn><mi>x</mi></mrow><mo>+</mo><mn>1</mn></mrow></math>"
+ }
+]

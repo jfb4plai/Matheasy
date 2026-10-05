@@ -2,7 +2,7 @@
     "name": "Matheasy",
     "nameLocale": { "fr": "Matheasy" },
     "guid": "asc.{bf6924ef-ae73-473f-8988-b310d6b26db1}",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "baseUrl": "",
     "minVersion": "8.2.0",
     "variations": [

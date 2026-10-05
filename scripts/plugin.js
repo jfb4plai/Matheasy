@@ -12,7 +12,8 @@
     }
 
     window.Asc.plugin.init = function () {
-        document.getElementById('run-corpus').addEventListener('click', insertCorpus);
+        document.getElementById('run-corpus').addEventListener('click', function () { run('corpus/formules.json', false); });
+        document.getElementById('run-exp').addEventListener('click', function () { run('corpus/experiences.json', true); });
     };
 
     window.Asc.plugin.button = function () {
@@ -29,12 +30,19 @@
         return tests;
     }
 
-    function insertCorpus() {
+    // experiences.json : une entrée = un test {id, label, format, text}
+    function buildExperiments(items) {
+        return items.map(function (it) {
+            return { label: it.id + ' — ' + it.label + ' [' + it.format + ']', text: it.text, format: it.format };
+        });
+    }
+
+    function run(file, isExperiment) {
         document.getElementById('log').textContent = '';
-        fetch('corpus/formules.json')
+        fetch(file)
             .then(function (r) { return r.json(); })
             .then(function (items) {
-                var tests = buildTests(items);
+                var tests = isExperiment ? buildExperiments(items) : buildTests(items);
                 window.Asc.scope.tests = tests;
                 window.Asc.plugin.callCommand(function () {
                     var doc = Api.GetDocument();
