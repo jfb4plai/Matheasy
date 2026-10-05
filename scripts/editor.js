@@ -95,21 +95,73 @@ window.Matheasy = window.Matheasy || {};
         }
         window.Asc.scope.matheasyLatex = latex;
         var mode = $('mode').value;
+        var finish = function (ok, note) {
+            if (ok === false) { setStatus('ONLYOFFICE a refusé la formule.', true); return; }
+            var msg = M.replaceMode ? 'Formule insérée à la place de la sélection (vérifie le document). ' + (note || '') : 'Équation insérée dans le document.';
+            setStatus(msg, false);
+            if (M.replaceMode) { M.setReplaceMode(false); }
+            if ($('autoclear').checked && mf.setValue) { mf.setValue(''); }
+        };
+        if (M.replaceMode) {
+            window.Asc.plugin.callCommand(function () {
+                var doc = Api.GetDocument();
+                var note = '';
+                try {
+                    var r = doc.GetRangeBySelect();
+                    if (r && typeof r.Delete === 'function') { r.Delete(); note = '(ancienne formule supprimée)'; }
+                    else { note = '(pas de Delete : remplacement laissé à ONLYOFFICE)'; }
+                } catch (e) { note = '(Delete ERREUR : ' + e.message + ')'; }
+                var ok = doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
+                return JSON.stringify({ ok: ok, note: note });
+            }, false, true, function (res) {
+                var o = {}; try { o = JSON.parse(res); } catch (e) { /* ignoré */ }
+                finish(o.ok, o.note);
+            });
+            return;
+        }
         var doInsert = function () {
             window.Asc.plugin.callCommand(function () {
                 var doc = Api.GetDocument();
                 return doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
-            }, false, true, function (ok) {
-                setStatus(ok === false ? 'ONLYOFFICE a refusé la formule.' : 'Équation insérée dans le document.', ok === false);
-                if (ok !== false && $('autoclear').checked && mf.setValue) { mf.setValue(''); }
-            });
+            }, false, true, function (ok) { finish(ok); });
         };
         if (mode === 'inline') {
-            // Espace invisible d'abord : le paragraphe n'est plus vide, l'équation devrait rester dans le texte
+            // Espace invisible d'abord : le paragraphe n'est plus vide, l'équation reste dans le texte
             window.Asc.plugin.executeMethod('InputText', ['​'], doInsert);
         } else {
             doInsert();
         }
+    }
+
+    // ---- Modification d'une formule existante ----
+    M.replaceMode = false;
+    M.setReplaceMode = function (on) {
+        M.replaceMode = on;
+        $('editmode').style.display = on ? 'flex' : 'none';
+    };
+
+    function editSelection() {
+        var mf = $('mf');
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var r = doc.GetRangeBySelect();
+            if (!r) { return JSON.stringify({ error: 'Aucune sélection dans le document.' }); }
+            try {
+                var j = r.ToJSON(false);
+                return JSON.stringify({ json: (typeof j === 'string') ? j : JSON.stringify(j) });
+            } catch (e) { return JSON.stringify({ error: 'Lecture impossible : ' + e.message }); }
+        }, false, true, function (res) {
+            var o = {};
+            try { o = JSON.parse(res); } catch (e) { setStatus('Réponse illisible d\'ONLYOFFICE.', true); return; }
+            if (o.error) { setStatus(o.error, true); return; }
+            var out;
+            try { out = M.jsonToLatex(o.json); } catch (e2) { setStatus('Structure de formule non reconnue : ' + e2.message, true); return; }
+            if (!out.latex) { setStatus('Aucune formule dans la sélection. Sélectionne toute la formule dans le document.', true); return; }
+            if (mf.setValue) { mf.setValue(out.latex); }
+            M.setReplaceMode(true);
+            var warn = out.warnings.length ? ' Attention : ' + out.warnings.join(' ; ') + '.' : '';
+            setStatus('Formule chargée. Modifie-la puis clique sur « Insérer » pour remplacer l\'ancienne.' + warn, out.warnings.length > 0);
+        });
     }
 
     // Annote la sélection du document : color = [r,g,b] | 'auto' ; strike = true/false/undefined
@@ -166,6 +218,8 @@ window.Matheasy = window.Matheasy || {};
         var mf = $('mf');
         buildPalettes(mf);
         $('btn-insert').addEventListener('click', insertIntoDocument);
+        $('btn-edit').addEventListener('click', editSelection);
+        $('btn-cancel-edit').addEventListener('click', function () { M.setReplaceMode(false); setStatus('Modification annulée.', false); });
         $('btn-clear').addEventListener('click', function () { if (mf.setValue) { mf.setValue(''); } mf.focus(); });
         $('btn-red').addEventListener('click', function () { annotate([220, 0, 0]); });
         $('btn-blue').addEventListener('click', function () { annotate([0, 70, 200]); });

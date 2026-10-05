@@ -25,3 +25,6 @@ button { font: inherit; cursor: pointer; }
 
 .evhead { margin-top: 8px; font-size: 12px; color: #444; }
 #events { display: block; width: 100%; box-sizing: border-box; font-size: 12px; }
+
+.editmode { align-items: center; gap: 8px; margin: 0 0 10px; padding: 6px 10px; background: #fff7d6; border: 1px solid #e6c84b; border-radius: 4px; }
+.editmode button { padding: 3px 10px; border: 1px solid #cbcbcb; border-radius: 4px; background: #fff; }

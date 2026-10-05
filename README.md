@@ -13,7 +13,8 @@ Pas d'objet OLE : les formules sont des **équations natives** du document (ins�
 - **Validé dans ONLYOFFICE Desktop** (corpus de test, v0.0.x) : équations natives via `AddMathEquation` (LaTeX), couleur et barré sur une partie d'équation via `ApiRange.SetColor` / `SetStrikeout`, accolade, matrices, systèmes, alignement, vecteur (`\vec`), encadré (MathML `menclose box`).
 - **Non pris en charge par le moteur** (testé) : `\cancel`, `\boxed` (LaTeX), `\color`, `\textcolor`, `\overrightarrow`.
 - **v0.1.0 (prototype, non testé)** : fenêtre d'édition avec champ [MathLive](https://github.com/arnog/mathlive) (MIT, chargé depuis jsDelivr), palettes par thème, insertion en équation native, boutons d'annotation (couleur, barré) sur la sélection. Les outils de test restent dans un volet « Outils de test ».
-- **Réédition d'une équation existante** : `ToJSON` / `FromJSON` fonctionnent pour une formule sans racine ; le contenu des racines est exporté vide (`"e":null`). Pas encore exploité.
+- **Réédition d'une équation existante (v0.2.0, non testé)** : bouton « Modifier la formule sélectionnée » ; `scripts/json2latex.js` convertit le JSON ONLYOFFICE en LaTeX (tests : `node tests/json2latex.test.js`, 18 cas reconstruits d'après les arbres observés). Limite connue : la lecture par sélection (`Range.ToJSON`) exporte le contenu des racines vide ; la lecture du paragraphe entier est correcte.
+- **Événements du document** : seuls `onDocumentContentReady` et `onTargetPositionChanged` sont reçus ; pas de `onClick` / `onDblClick` (donc pas d'ouverture au double-clic).
 
 ## Fabriquer le fichier .plugin
 
