@@ -251,4 +251,29 @@ window.Matheasy = window.Matheasy || {};
         })(data);
         return info;
     };
+
+    /** Texte ordinaire (hors formules) d'un paragraphe : commentaires, mots… Les espaces invisibles sont ignorés. */
+    M.jsonText = function (json) {
+        var data = (typeof json === 'string') ? JSON.parse(json) : json;
+        var out = '';
+        (function walk(n) {
+            if (!n || typeof n !== 'object') { return; }
+            if (Array.isArray(n)) { n.forEach(walk); return; }
+            if (n.type === 'mathRun') { return; }
+            if (n.type === 'run') {
+                (n.content || []).forEach(function (it) {
+                    if (typeof it === 'string') { out += it; }
+                    else if (it && typeof it === 'object') {
+                        if (it.type === 'space') { out += ' '; }
+                        else if (typeof it.value === 'string') { out += it.value; }
+                        else if (typeof it.text === 'string') { out += it.text; }
+                        else if (typeof it.value === 'number' && it.type !== 'mathTxt') { out += String.fromCodePoint(it.value); }
+                    }
+                });
+                return;
+            }
+            for (var k in n) { if (n[k] && typeof n[k] === 'object') { walk(n[k]); } }
+        })(data);
+        return out.replace(/​/g, '').replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
+    };
 })(window.Matheasy);

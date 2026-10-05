@@ -89,6 +89,7 @@ window.Matheasy = window.Matheasy || {};
     function refreshNoteOpts() {
         var mf = $('mf');
         var v = (mf.getValue ? mf.getValue('latex') : '') || '';
+        if ($('latexview')) { $('latexview').value = v; }
         var show = v.indexOf('\\text{') !== -1 || v.indexOf('\\\\') !== -1 || v.indexOf('displaylines') !== -1;
         $('noteopts').style.display = show ? 'block' : 'none';
     }
@@ -115,7 +116,7 @@ window.Matheasy = window.Matheasy || {};
         refreshNoteOpts();
     }
 
-    function insertSteps(lines) {
+    function insertSteps(lines, replaceTarget) {
         if (!lines.length) { setStatus('Rien à insérer : toutes les lignes sont vides.', true); return; }
         var prepared = [];
         for (var i = 0; i < lines.length; i++) {
@@ -125,6 +126,8 @@ window.Matheasy = window.Matheasy || {};
             prepared.push({ latex: latex, note: (lines[i].note || '').trim() });
         }
         window.Asc.scope.matheasyLines = prepared;
+        window.Asc.scope.matheasyReplace = replaceTarget || null;
+        var notesCount = prepared.filter(function (l) { return l.note; }).length;
         window.Asc.scope.matheasyNoteGap = parseInt($('notegap').value, 10) || 16;
         window.Asc.scope.matheasyNoteItalic = $('noteitalic').checked;
         window.Asc.plugin.callCommand(function () {
@@ -133,6 +136,23 @@ window.Matheasy = window.Matheasy || {};
             var res = { ok: 0, fail: 0, noteSkipped: false, errors: [] };
             var canText = (typeof doc.EnterText === 'function');
             var canBreak = (typeof doc.InsertParagraphBreak === 'function');
+            var RT = Asc.scope.matheasyReplace;
+            if (RT) {
+                // Remplacement exact : on vérifie que les paragraphes d'origine n'ont pas changé, puis on les vide
+                function sig(str) { return (String(str).match(/"value":\d+/g) || []).join(','); }
+                if (typeof doc.RemoveElement !== 'function') { return JSON.stringify({ ok: 0, fail: 1, errors: ['RemoveElement absent : remplacement impossible'] }); }
+                for (var c = 0; c < RT.idxs.length; c++) {
+                    var pc = null;
+                    try { pc = doc.GetElement(RT.idxs[c]); } catch (eC) { /* ignoré */ }
+                    var jc = pc ? pc.ToJSON(false, false) : '';
+                    if (typeof jc !== 'string') { jc = JSON.stringify(jc); }
+                    if (!pc || sig(jc) !== sig(RT.jsons[c])) { return JSON.stringify({ ok: 0, fail: 1, errors: ['Le document a changé depuis le chargement : recharge la sélection.'] }); }
+                }
+                for (var kk = RT.idxs.length - 1; kk >= 1; kk--) { doc.RemoveElement(RT.idxs[kk]); }
+                var p0 = doc.GetElement(RT.idxs[0]);
+                p0.RemoveAllElements();
+                p0.Select();
+            }
             for (var i = 0; i < L.length; i++) {
                 try {
                     if (canText) { doc.EnterText('​'); }
@@ -163,12 +183,13 @@ window.Matheasy = window.Matheasy || {};
             return JSON.stringify(res);
         }, false, true, function (out) {
             var r = {}; try { r = JSON.parse(out); } catch (e) { /* ignoré */ }
-            var msg = (r.ok || 0) + ' ligne(s) insérée(s)' + (r.fail ? ', ' + r.fail + ' échec(s)' : '') + '.';
+            var msg = (r.ok || 0) + ' ligne(s) insérée(s)' + (notesCount ? ', dont ' + notesCount + ' avec commentaire' : ', sans commentaire reconnu') + (r.fail ? ', ' + r.fail + ' échec(s)' : '') + '.';
             if (r.noteSkipped) { msg += ' Commentaires non insérés (EnterText absent).'; }
             if (r.moved !== undefined || r.italic !== undefined) { msg += ' [sortie de formule : ' + (r.moved || 0) + ', italique : ' + (r.italic || 0) + ']'; }
             if (r.errors && r.errors.length) { msg += ' ' + r.errors.join(' ; '); }
             setStatus(msg, !!(r.fail || (r.errors && r.errors.length)));
             if (!r.fail) {
+                if (M.replaceMode) { M.setReplaceMode(false); }
                 if ($('autoclear').checked) {
                     var m = $('mf'); if (m.setValue) { m.setValue(''); }
                     refreshNoteOpts();
@@ -184,6 +205,7 @@ window.Matheasy = window.Matheasy || {};
         if (!raw.trim()) { setStatus('Rien à insérer : le champ est vide.', true); return; }
         var lines = M.splitLines(raw);
         if (!lines.length) { setStatus('Rien à insérer : le champ est vide.', true); return; }
+        if (M.replaceMode && M.replaceTarget && M.replaceTarget.kind === 'paragraphs') { insertSteps(lines, M.replaceTarget); return; }
         if (lines.length > 1 || lines[0].note) {
             if (M.replaceMode) {
                 setStatus('En mode modification, une seule ligne sans commentaire peut remplacer la formule. Clique sur « Annuler » pour insérer plusieurs lignes.', true);
@@ -277,6 +299,51 @@ window.Matheasy = window.Matheasy || {};
         $('editmode').style.display = on ? 'flex' : 'none';
     };
 
+    // Plusieurs paragraphes sélectionnés (une résolution) : chaque paragraphe devient une ligne du champ.
+    // Renvoie true si la sélection a été prise en charge (chargée, ou refusée avec un message).
+    function loadParagraphs(paras, mf, quiet) {
+        var lines = [], idxs = [], jsons = [];
+        for (var i = 0; i < paras.length; i++) {
+            var info;
+            try { info = M.jsonInfo(paras[i].json); } catch (e) { return false; }
+            if (!info.hasMath) {
+                if (info.hasText) { if (!quiet) { setStatus('La sélection contient du texte seul (paragraphe ' + (i + 1) + ') : sélectionne uniquement les lignes de formules.', true); } return true; }
+                continue; // paragraphe vide
+            }
+            var conv;
+            try { conv = M.jsonToLatex(paras[i].json); } catch (e2) { return false; }
+            var note = '';
+            if (info.hasText) {
+                try { note = M.jsonText(paras[i].json); } catch (e3) { note = ''; }
+                if (!note) { if (!quiet) { setStatus('Le commentaire du paragraphe ' + (i + 1) + ' n\'a pas pu être lu : sélectionne uniquement les formules.', true); } return true; }
+            }
+            lines.push({ latex: conv.latex, note: note });
+            idxs.push(paras[i].idx);
+            jsons.push(paras[i].json);
+        }
+        if (lines.length < 2) { return false; }
+        for (var k = 0; k < idxs.length; k++) {
+            if (idxs[k] === null || idxs[k] === undefined || idxs[k] !== idxs[0] + k) {
+                if (!quiet) { setStatus('La sélection n\'est pas faite de paragraphes qui se suivent : sélectionne une résolution d\'un seul tenant.', true); }
+                return true;
+            }
+        }
+        var text = lines.map(function (l) {
+            var n = l.note ? '\\quad\\text{' + l.note.replace(/([&%#_$])/g, '\\$1') + '}' : '';
+            return l.latex + n;
+        }).join('\\\\ ');
+        var load = function () {
+            if ($('detect')) { $('detect').style.display = 'none'; }
+            if (mf.setValue) { mf.setValue('\\displaylines{' + text + '}'); }
+            M.replaceTarget = { kind: 'paragraphs', idxs: idxs, jsons: jsons };
+            M.setReplaceMode(true);
+            refreshNoteOpts();
+            setStatus('Résolution chargée (' + lines.length + ' lignes). Modifie-la puis clique sur « Insérer » pour remplacer les lignes sélectionnées.', false);
+        };
+        if (window.customElements && customElements.whenDefined) { customElements.whenDefined('math-field').then(load); } else { load(); }
+        return true;
+    }
+
     // Lecture de la formule à modifier.
     //  auto = true  : appelé à l'ouverture de la fenêtre -> seulement si une sélection existe
     //  auto = false : bouton / menu -> la sélection, sinon le paragraphe sous le curseur
@@ -300,11 +367,24 @@ window.Matheasy = window.Matheasy || {};
                 try { var pj = para.ToJSON(false, false); out.paraJson = (typeof pj === 'string') ? pj : JSON.stringify(pj); } catch (e4) { out.paraError = e4.message; }
                 try { out.idx = para.GetPosInParent(); } catch (e5) { /* ignoré */ }
             }
+            if (r && typeof r.GetAllParagraphs === 'function') {
+                try {
+                    var list = r.GetAllParagraphs() || [];
+                    out.paras = [];
+                    for (var q = 0; q < list.length; q++) {
+                        var pjq = list[q].ToJSON(false, false);
+                        var ixq = null;
+                        try { ixq = list[q].GetPosInParent(); } catch (eq) { /* ignoré */ }
+                        out.paras.push({ json: (typeof pjq === 'string') ? pjq : JSON.stringify(pjq), idx: ixq });
+                    }
+                } catch (e6) { out.parasError = e6.message; }
+            }
             out.hasSelection = !!r;
             return JSON.stringify(out);
         }, false, true, function (res) {
             var o = {};
             try { o = JSON.parse(res); } catch (e) { if (!quiet) { setStatus('Réponse illisible d\'ONLYOFFICE.', true); } return; }
+            if (o.paras && o.paras.length > 1 && loadParagraphs(o.paras, mf, quiet)) { return; }
             if (!o.rangeJson && !o.paraJson) { if (!quiet) { setStatus('Aucune formule : sélectionne-la dans le document, ou place le curseur dans son paragraphe.', true); } return; }
 
             // 1) Paragraphe entier = une formule seule : lecture fiable (racines complètes) + remplacement exact
@@ -382,6 +462,7 @@ window.Matheasy = window.Matheasy || {};
                 b.title = it.title || it.latex;
                 b.addEventListener('click', function () {
                     var field = (M.activeField && document.body.contains(M.activeField)) ? M.activeField : mf;
+                    if (it.command) { try { field.focus(); field.executeCommand(it.command); } catch (eCmd) { /* ignoré */ } return; }
                     if (field.insert) { field.insert(it.latex, { focus: true, format: 'latex' }); }
                     else { setStatus('Éditeur MathLive non chargé.', true); }
                 });

@@ -27,7 +27,11 @@ window.Matheasy.PALETTES = [
             { label: 'sys', latex: '\\begin{cases}#? \\\\ #?\\end{cases}', title: 'Système d\'équations' },
             { label: 'mat', latex: '\\begin{pmatrix}#? & #? \\\\ #? & #?\\end{pmatrix}', title: 'Matrice 2×2' },
             { label: 'det', latex: '\\begin{vmatrix}#? & #? \\\\ #? & #?\\end{vmatrix}', title: 'Déterminant 2×2' },
-            { label: 'ali', latex: '\\begin{aligned}#? &= #? \\\\ #? &= #?\\end{aligned}', title: 'Résolution alignée sur le =' }
+            { label: 'ali', latex: '\\begin{aligned}#? &= #? \\\\ #? &= #?\\end{aligned}', title: 'Résolution alignée sur le =' },
+            { label: '+col', command: 'addColumnAfter', title: 'Matrice : ajouter une colonne après la colonne courante' },
+            { label: '+lig', command: 'addRowAfter', title: 'Matrice : ajouter une ligne après la ligne courante' },
+            { label: '−col', command: 'removeColumn', title: 'Matrice : supprimer la colonne courante' },
+            { label: '−lig', command: 'removeRow', title: 'Matrice : supprimer la ligne courante' }
         ]
     },
     {

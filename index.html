@@ -24,7 +24,7 @@
     </script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.5.0 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.5.1 — prototype</span></h2>
 
     <div id="detect" class="detect" style="display:none">Formule détectée sous le curseur. <button id="btn-detect-edit" type="button">Modifier cette formule</button></div>
 
@@ -86,6 +86,8 @@
         <button id="run-roundtrip" type="button">Test : aller-retour JSON de la sélection</button>
         <button id="run-summary" type="button">Test : résumé structurel de toutes les équations</button>
         <div class="evhead">Journal des tests (Ctrl+A puis Ctrl+C dans la zone pour tout copier)</div>
+        <div class="evhead">LaTeX du champ de saisie (lecture seule) :</div>
+        <textarea id="latexview" readonly rows="3"></textarea>
         <textarea id="log" readonly rows="14" placeholder="Journal (Ctrl+A puis Ctrl+C pour copier)"></textarea>
         <div class="evhead">Événements reçus du document (clique et double-clique dans le document, y compris sur une équation) <button id="clear-events" type="button">Vider</button></div>
         <textarea id="events" readonly rows="5" placeholder="Aucun événement reçu pour l'instant"></textarea>
