@@ -81,7 +81,60 @@ window.Matheasy = window.Matheasy || {};
         return out;
     };
 
-    M.UNSUPPORTED = ['\\cancel', '\\boxed', '\\color', '\\textcolor'];
+    M.UNSUPPORTED = ['\\cancel', '\\color', '\\textcolor'];
+
+    // Prépare une formule pour AddMathEquation : LaTeX, sauf si elle contient un encadré (\boxed) -> MathML (menclose box)
+    M.buildEquation = function (latex) {
+        var l = M.sanitizeLatex(latex);
+        if (l.indexOf('\\boxed{') !== -1 && window.MathLive && typeof window.MathLive.convertLatexToMathMl === 'function') {
+            try {
+                var ml = window.MathLive.convertLatexToMathMl(l).replace(/<mo>&#8290;<\/mo>/g, '');
+                return { text: '<math xmlns="http://www.w3.org/1998/Math/MathML">' + ml + '</math>', format: 'mathml', latex: l };
+            } catch (e) { /* retombe sur le LaTeX */ }
+        }
+        return { text: l, format: 'latex', latex: l };
+    };
+
+    // ---- Couleur d'écriture (mode élève) ----
+    var INK = { blue: [0, 70, 200], green: [0, 140, 40], red: [220, 0, 0] };
+    // n : nombre de paragraphes insérés ; singleCheck : ne colorer que si le paragraphe ne contient que la formule
+    function inkThen(n, singleCheck, next) {
+        var v = $('ink') ? $('ink').value : 'auto';
+        if (v === 'auto' || !INK[v]) { next(); return; }
+        window.Asc.scope.matheasyInk = { rgb: INK[v], n: n };
+        var colorize = function () {
+            window.Asc.plugin.callCommand(function () {
+                var doc = Api.GetDocument();
+                var I = Asc.scope.matheasyInk;
+                var p = doc.GetCurrentParagraph();
+                if (!p) { return JSON.stringify({ err: 'paragraphe courant introuvable' }); }
+                var idx = p.GetPosInParent();
+                var k = 0;
+                for (var i = 0; i < I.n; i++) {
+                    var el = doc.GetElement(idx - i);
+                    if (el) { el.GetRange().SetColor(I.rgb[0], I.rgb[1], I.rgb[2], false); k++; }
+                }
+                return JSON.stringify({ colored: k });
+            }, false, true, function (res) {
+                var r = {}; try { r = JSON.parse(res); } catch (e) { /* ignoré */ }
+                if (r.err) { setStatus('Couleur non appliquée : ' + r.err, true); }
+                next();
+            });
+        };
+        if (!singleCheck) { colorize(); return; }
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var p = doc.GetCurrentParagraph();
+            if (!p) { return JSON.stringify({}); }
+            var j = p.ToJSON(false, false);
+            return JSON.stringify({ json: (typeof j === 'string') ? j : JSON.stringify(j) });
+        }, false, true, function (res) {
+            var alone = false;
+            try { var o = JSON.parse(res); if (o.json) { var info = M.jsonInfo(o.json); alone = info.hasMath && !info.hasText; } } catch (e) { /* ignoré */ }
+            if (alone) { colorize(); }
+            else { setStatus('Couleur non appliquée : la ligne contient du texte en plus de la formule.', true); next(); }
+        });
+    }
 
     // ---- Champ multi-lignes : une ligne du champ = un paragraphe du document, commentaire facultatif à droite ----
     M.activeField = null;
@@ -123,15 +176,16 @@ window.Matheasy = window.Matheasy || {};
         if (!lines.length) { setStatus('Rien à insérer : toutes les lignes sont vides.', true); return; }
         var prepared = [];
         for (var i = 0; i < lines.length; i++) {
-            var latex = M.sanitizeLatex(lines[i].latex);
+            var built = M.buildEquation(lines[i].latex);
+            var latex = built.latex;
             var bad = M.UNSUPPORTED.filter(function (c) { return latex.indexOf(c) !== -1; });
             if (bad.length) { setStatus('Ligne ' + (i + 1) + ' : commande non prise en charge par ONLYOFFICE : ' + bad.join(', ') + '.', true); return; }
-            prepared.push({ latex: latex, note: (lines[i].note || '').trim() });
+            prepared.push({ latex: built.text, format: built.format, note: (lines[i].note || '').trim() });
         }
         window.Asc.scope.matheasyLines = prepared;
         window.Asc.scope.matheasyReplace = replaceTarget || null;
         var notesCount = prepared.filter(function (l) { return l.note; }).length;
-        window.Asc.scope.matheasyNoteCol = ($('notegap').value === 'col');
+        window.Asc.scope.matheasyNoteCol = !!($('notecol') && $('notecol').checked);
         window.Asc.scope.matheasyNoteGap = parseInt($('notegap').value, 10) || 16;
         window.Asc.scope.matheasyNoteItalic = $('noteitalic').checked;
         window.Asc.plugin.callCommand(function () {
@@ -160,7 +214,7 @@ window.Matheasy = window.Matheasy || {};
             for (var i = 0; i < L.length; i++) {
                 try {
                     if (canText) { doc.EnterText('​'); }
-                    var ok = doc.AddMathEquation(L[i].latex, 'latex');
+                    var ok = doc.AddMathEquation(L[i].latex, L[i].format || 'latex');
                     if (ok === false) { res.fail++; } else { res.ok++; }
                     if (L[i].note && Asc.scope.matheasyNoteCol) {
                         // Commentaires alignés en colonne : taquet de tabulation sur le paragraphe + tabulation + texte
@@ -213,12 +267,14 @@ window.Matheasy = window.Matheasy || {};
             if (r.errors && r.errors.length) { msg += ' ' + r.errors.join(' ; '); }
             setStatus(msg, !!(r.fail || (r.errors && r.errors.length)));
             if (!r.fail) {
+              inkThen(r.ok || 0, false, function () {
                 if (M.replaceMode) { M.setReplaceMode(false); }
                 if ($('autoclear').checked) {
                     var m = $('mf'); if (m.setValue) { m.setValue(''); }
                     refreshNoteOpts();
                 }
                 if ($('closeafter').checked) { window.Asc.plugin.executeCommand('close', ''); }
+              });
             }
         });
     }
@@ -238,21 +294,25 @@ window.Matheasy = window.Matheasy || {};
             insertSteps(lines);
             return;
         }
-        var latex = M.sanitizeLatex(lines[0].latex);
+        var built1 = M.buildEquation(lines[0].latex);
+        var latex = built1.latex;
         var bad = M.UNSUPPORTED.filter(function (c) { return latex.indexOf(c) !== -1; });
         if (bad.length) {
             setStatus('Commande non prise en charge par ONLYOFFICE : ' + bad.join(', ') + '. Retire-la (voir les boutons d\'annotation).', true);
             return;
         }
-        window.Asc.scope.matheasyLatex = latex;
+        window.Asc.scope.matheasyLatex = built1.text;
+        window.Asc.scope.matheasyFormat = built1.format;
         var mode = $('mode').value;
         var finish = function (ok, note) {
             if (ok === false) { setStatus('ONLYOFFICE a refusé la formule.', true); return; }
             var msg = M.replaceMode ? 'Formule insérée à la place de la sélection. ' + (note || '') : 'Équation insérée dans le document.';
             setStatus(msg, false);
-            if (M.replaceMode) { M.setReplaceMode(false); }
-            if ($('autoclear').checked && mf.setValue) { mf.setValue(''); }
-            if ($('closeafter').checked) { window.Asc.plugin.executeCommand('close', ''); }
+            inkThen(1, true, function () {
+                if (M.replaceMode) { M.setReplaceMode(false); }
+                if ($('autoclear').checked && mf.setValue) { mf.setValue(''); }
+                if ($('closeafter').checked) { window.Asc.plugin.executeCommand('close', ''); }
+            });
         };
         if (M.replaceMode && M.replaceTarget && M.replaceTarget.kind === 'paragraph') {
             window.Asc.scope.matheasyTarget = M.replaceTarget;
@@ -269,7 +329,7 @@ window.Matheasy = window.Matheasy || {};
                 p.RemoveAllElements();
                 p.Select();
                 if (t.inline && typeof doc.EnterText === 'function') { doc.EnterText('\u200B'); }
-                var ok = doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
+                var ok = doc.AddMathEquation(Asc.scope.matheasyLatex, Asc.scope.matheasyFormat || 'latex');
                 return JSON.stringify({ ok: ok, note: t.inline ? '(remplacement en ligne, dans le paragraphe d\'origine)' : '(remplacement dans le paragraphe d\'origine)' });
             }, false, true, function (res) {
                 var o = {}; try { o = JSON.parse(res); } catch (e) { /* ignoré */ }
@@ -292,7 +352,7 @@ window.Matheasy = window.Matheasy || {};
                 } else {
                     note = '(méthode A : insertion sur la sélection)';
                 }
-                var ok = doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
+                var ok = doc.AddMathEquation(Asc.scope.matheasyLatex, Asc.scope.matheasyFormat || 'latex');
                 return JSON.stringify({ ok: ok, note: note });
             }, false, true, function (res) {
                 var o = {}; try { o = JSON.parse(res); } catch (e) { /* ignoré */ }
@@ -303,7 +363,7 @@ window.Matheasy = window.Matheasy || {};
         var doInsert = function () {
             window.Asc.plugin.callCommand(function () {
                 var doc = Api.GetDocument();
-                return doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
+                return doc.AddMathEquation(Asc.scope.matheasyLatex, Asc.scope.matheasyFormat || 'latex');
             }, false, true, function (ok) { finish(ok); });
         };
         if (mode === 'inline') {
@@ -543,8 +603,33 @@ window.Matheasy = window.Matheasy || {};
         setTimeout(function () { editSelection('dbl'); }, 250);
     };
 
+    // ---- Mode développement : les outils de test sont masqués (Ctrl+Maj+D, ou 5 clics sur le numéro de version) ----
+    function setDevMode(on) {
+        document.body.classList.toggle('devmode', on);
+        try { localStorage.setItem('matheasyDev', on ? '1' : '0'); } catch (e) { /* ignoré */ }
+    }
+    function initDevMode() {
+        var on = false;
+        try { on = localStorage.getItem('matheasyDev') === '1'; } catch (e) { /* ignoré */ }
+        document.body.classList.toggle('devmode', on);
+        document.addEventListener('keydown', function (ev) {
+            if (ev.ctrlKey && ev.shiftKey && (ev.key === 'D' || ev.key === 'd')) { setDevMode(!document.body.classList.contains('devmode')); }
+        });
+        var clicks = 0, timer = null;
+        var ver = document.querySelector('.version');
+        if (ver) {
+            ver.addEventListener('click', function () {
+                clicks++;
+                clearTimeout(timer);
+                timer = setTimeout(function () { clicks = 0; }, 1500);
+                if (clicks >= 5) { clicks = 0; setDevMode(!document.body.classList.contains('devmode')); }
+            });
+        }
+    }
+
     M.initEditor = function () {
         var mf = $('mf');
+        initDevMode();
         if (M.mode === 'panel') {
             document.body.classList.add('panel');
             if ($('closeafter')) { $('closeafter').checked = false; $('closeafter').parentNode.style.display = 'none'; }

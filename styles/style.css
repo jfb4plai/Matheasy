@@ -54,3 +54,8 @@ body.panel .opt { display: block; }
 body.panel .field.step { font-size: 20px; min-height: 48px; }
 
 #latexview { display: block; width: 100%; box-sizing: border-box; font-size: 12px; margin-bottom: 6px; }
+
+/* Outils de test masqués par défaut (Ctrl+Maj+D ou 5 clics sur le numéro de version) */
+.dev { display: none; }
+body.devmode .dev { display: block; }
+.version { user-select: none; }
