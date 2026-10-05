@@ -208,10 +208,11 @@ window.Matheasy = window.Matheasy || {};
                     if (typeof jc !== 'string') { jc = JSON.stringify(jc); }
                     if (!pc || sig(jc) !== sig(RT.jsons[c])) { return JSON.stringify({ ok: 0, fail: 1, errors: ['Le document a changé depuis le chargement : recharge la sélection.'] }); }
                 }
-                for (var kk = RT.idxs.length - 1; kk >= 1; kk--) { doc.RemoveElement(RT.idxs[kk]); }
-                var p0 = doc.GetElement(RT.idxs[0]);
-                p0.RemoveAllElements();
-                p0.Select();
+                // Nouveau paragraphe vide juste après les lignes d'origine (même chemin que l'insertion normale : formule en ligne, à gauche)
+                if (typeof doc.AddElement !== 'function' || typeof Api.CreateParagraph !== 'function') { return JSON.stringify({ ok: 0, fail: 1, errors: ['AddElement absent : remplacement impossible'] }); }
+                var np = Api.CreateParagraph();
+                doc.AddElement(RT.idxs[RT.idxs.length - 1] + 1, np);
+                np.Select();
             }
             for (var i = 0; i < L.length; i++) {
                 try {
@@ -260,6 +261,10 @@ window.Matheasy = window.Matheasy || {};
                     }
                 } catch (e) { res.fail++; res.errors.push('ligne ' + (i + 1) + ' : ' + e.message); }
             }
+            if (RT && !RT.after && !res.fail) {
+                try { for (var kk = RT.idxs.length - 1; kk >= 0; kk--) { doc.RemoveElement(RT.idxs[kk]); } }
+                catch (eR) { res.errors.push('suppression des anciennes lignes : ' + eR.message); }
+            }
             return JSON.stringify(res);
         }, false, true, function (out) {
             var r = {}; try { r = JSON.parse(out); } catch (e) { /* ignoré */ }
@@ -287,7 +292,12 @@ window.Matheasy = window.Matheasy || {};
         if (!raw.trim()) { setStatus('Rien à insérer : le champ est vide.', true); return; }
         var lines = M.splitLines(raw);
         if (!lines.length) { setStatus('Rien à insérer : le champ est vide.', true); return; }
-        if (M.replaceMode && M.replaceTarget && M.replaceTarget.kind === 'paragraphs') { insertSteps(lines, M.replaceTarget); return; }
+        var rt = M.replaceTarget;
+        if (M.replaceMode && rt && rt.kind === 'paragraph') { rt = { kind: 'paragraphs', idxs: [rt.idx], jsons: [rt.json] }; }
+        if (M.replaceMode && rt && rt.kind === 'paragraphs') {
+            insertSteps(lines, { kind: 'paragraphs', idxs: rt.idxs, jsons: rt.jsons, after: !!M.afterMode });
+            return;
+        }
         if (lines.length > 1 || lines[0].note) {
             if (M.replaceMode) {
                 setStatus('En mode modification, une seule ligne sans commentaire peut remplacer la formule. Clique sur « Annuler » pour insérer plusieurs lignes.', true);
@@ -379,6 +389,7 @@ window.Matheasy = window.Matheasy || {};
     // ---- Modification d'une formule existante ----
     M.replaceMode = false;
     M.replaceTarget = null;
+    M.afterMode = false;
     M.setReplaceMode = function (on) {
         M.replaceMode = on;
         if (!on) { M.replaceTarget = null; }
@@ -424,7 +435,7 @@ window.Matheasy = window.Matheasy || {};
             M.replaceTarget = { kind: 'paragraphs', idxs: idxs, jsons: jsons };
             M.setReplaceMode(true);
             refreshNoteOpts();
-            setStatus('Résolution chargée (' + lines.length + ' lignes). Modifie-la puis clique sur « Insérer » pour remplacer les lignes sélectionnées.', false);
+            setStatus('Résolution chargée (' + lines.length + ' lignes). Modifie-la puis clique sur « Insérer » (remplace) ou « Insérer à la suite » (garde les lignes et ajoute en dessous).', false);
         };
         if (window.customElements && customElements.whenDefined) { customElements.whenDefined('math-field').then(load); } else { load(); }
         return true;
@@ -511,7 +522,7 @@ window.Matheasy = window.Matheasy || {};
                 M.replaceTarget = target;
                 M.setReplaceMode(true);
                 var warn = out.warnings.length ? ' Attention : ' + out.warnings.join(' ; ') + '.' : '';
-                setStatus('Formule chargée. Modifie-la puis clique sur « Insérer » pour remplacer l\'ancienne.' + warn, out.warnings.length > 0);
+                setStatus('Formule chargée. Modifie-la puis clique sur « Insérer » (remplace l\'ancienne) ou « Insérer à la suite » (la garde et ajoute en dessous).' + warn, out.warnings.length > 0);
             };
             if (window.customElements && customElements.whenDefined) { customElements.whenDefined('math-field').then(load); } else { load(); }
         });
@@ -668,6 +679,10 @@ window.Matheasy = window.Matheasy || {};
         }, true);
         refreshNoteOpts();
         $('btn-edit').addEventListener('click', function () { editSelection(false); });
+        $('btn-after').addEventListener('click', function () {
+            M.afterMode = true;
+            try { insertIntoDocument(); } finally { M.afterMode = false; }
+        });
         $('btn-cancel-edit').addEventListener('click', function () { M.setReplaceMode(false); setStatus('Modification annulée.', false); });
         $('btn-clear').addEventListener('click', function () { if (mf.setValue) { mf.setValue(''); } mf.focus(); });
         $('btn-red').addEventListener('click', function () { annotate([220, 0, 0]); });
