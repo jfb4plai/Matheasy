@@ -21,3 +21,6 @@ button { font: inherit; cursor: pointer; }
 .status.error { color: #b00020; }
 .dev { margin-top: 10px; } .dev button { margin: 2px; padding: 3px 8px; }
 #log { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; white-space: pre-wrap; font-size: 12px; }
+
+.evhead { margin-top: 8px; font-size: 12px; color: #444; }
+#events { display: block; width: 100%; box-sizing: border-box; font-size: 12px; }

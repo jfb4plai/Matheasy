@@ -21,6 +21,8 @@
         document.getElementById('run-methods').addEventListener('click', listAllMethods);
         document.getElementById('run-md').addEventListener('click', convertToMarkdown);
         document.getElementById('run-roundtrip').addEventListener('click', roundTripJson);
+        document.getElementById('run-summary').addEventListener('click', summarizeEquations);
+        document.getElementById('clear-events').addEventListener('click', function () { document.getElementById('events').value = ''; });
     };
 
     window.Asc.plugin.button = function () {
@@ -197,6 +199,64 @@
             out.push('doc.InsertContent existe : ' + (typeof doc.InsertContent));
             return out;
         }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n')); });
+    }
+
+    // ---- Écoute d'événements du document (pour savoir ce qu'ONLYOFFICE nous signale) ----
+    var eventCount = {};
+    function logEvent(name, data) {
+        eventCount[name] = (eventCount[name] || 0) + 1;
+        var line = new Date().toLocaleTimeString() + '  ' + name + ' #' + eventCount[name];
+        try { if (data !== undefined) { line += '  ' + JSON.stringify(data).substring(0, 200); } } catch (e) { /* ignoré */ }
+        var box = document.getElementById('events');
+        if (box) { box.value += line + '\n'; box.scrollTop = box.scrollHeight; }
+    }
+    ['onClick', 'onDblClick', 'onTargetPositionChanged', 'onDocumentContentReady', 'onEnableMouseEvent'].forEach(function (name) {
+        window.Asc.plugin['event_' + name] = function (data) { logEvent(name, data); };
+    });
+
+    // ---- Résumé structurel compact de toutes les équations du document ----
+    var SKIP = { bFromDocument: 1, rPr: 1, ctrlPr: 1, footnotes: 1, endnotes: 1, reviewType: 1, pPr: 1, changes: 1, mathPr: 1, argPr: 1 };
+    function compact(n) {
+        if (n === null) { return 'null'; }
+        if (Array.isArray(n)) { return '[' + n.map(compact).join(' ') + ']'; }
+        if (typeof n !== 'object') { return String(n); }
+        if (n.type === 'mathRun') {
+            return 'run"' + (n.content || []).map(function (c) {
+                return c.type === 'mathTxt' ? String.fromCodePoint(c.value) : '<' + c.type + '>';
+            }).join('') + '"';
+        }
+        var parts = [];
+        for (var k in n) {
+            if (k === 'type' || SKIP[k]) { continue; }
+            parts.push(k + ':' + compact(n[k]));
+        }
+        return (n.type || 'obj') + '{' + parts.join(' ') + '}';
+    }
+
+    function summarizeEquations() {
+        document.getElementById('log').value = '';
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var res = [];
+            for (var i = 0; i < 120; i++) {
+                var el = null;
+                try { el = doc.GetElement(i); } catch (e) { break; }
+                if (!el) { break; }
+                try {
+                    var j = el.ToJSON(false, false);
+                    res.push((typeof j === 'string') ? j : JSON.stringify(j));
+                } catch (e2) { res.push('{"erreur":"' + e2.message + '"}'); }
+            }
+            return res;
+        }, false, true, function (res) {
+            var lines = [];
+            (res || []).forEach(function (str, i) {
+                if (str.indexOf('"mathRun"') === -1) { return; }
+                try { lines.push('P' + i + ' : ' + compact(JSON.parse(str))); } catch (e) { lines.push('P' + i + ' : JSON illisible (' + e.message + ')'); }
+            });
+            log(lines.length + ' paragraphe(s) contenant une équation sur ' + (res || []).length + '\n');
+            log(lines.join('\n\n'));
+        });
     }
 
     function run(file, isExperiment) {

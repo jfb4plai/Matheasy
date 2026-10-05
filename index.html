@@ -9,7 +9,7 @@
     <script type="module" src="https://cdn.jsdelivr.net/npm/mathlive"></script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.1.1 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.1.2 — prototype</span></h2>
 
     <div id="tabs" class="tabs"></div>
     <div id="palette" class="palette"></div>
@@ -48,6 +48,9 @@
         <button id="run-methods" type="button">Test : lister toutes les méthodes</button>
         <button id="run-md" type="button">Test : convertir le document en Markdown</button>
         <button id="run-roundtrip" type="button">Test : aller-retour JSON de la sélection</button>
+        <button id="run-summary" type="button">Test : résumé structurel de toutes les équations</button>
+        <div class="evhead">Événements reçus du document (clique et double-clique dans le document, y compris sur une équation) <button id="clear-events" type="button">Vider</button></div>
+        <textarea id="events" readonly rows="6" placeholder="Aucun événement reçu pour l'instant"></textarea>
         <textarea id="log" readonly rows="12" placeholder="Journal (Ctrl+A puis Ctrl+C pour copier)"></textarea>
     </details>
 
