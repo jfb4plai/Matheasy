@@ -73,6 +73,7 @@ window.Matheasy = window.Matheasy || {};
     // Adapte le LaTeX produit par MathLive à ce que le moteur d'ONLYOFFICE sait lire (voir corpus)
     M.sanitizeLatex = function (latex) {
         var out = latex;
+        out = out.replace(/\{\s*\\placeholder(\[[^\]]*\])?\{[^}]*\}\s*\}/g, '{}'); // case vide dans une structure -> case native ONLYOFFICE
         out = out.replace(/\\placeholder(\[[^\]]*\])?\{[^}]*\}/g, '□'); // zone vide -> □
         out = out.replace(/\\square(?![a-zA-Z])/g, '\u25A1'); // trou littéral -> □
         out = out.replace(/\\overrightarrow\{/g, '\\vec{');
