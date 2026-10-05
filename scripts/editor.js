@@ -74,6 +74,7 @@ window.Matheasy = window.Matheasy || {};
     M.sanitizeLatex = function (latex) {
         var out = latex;
         out = out.replace(/\\placeholder(\[[^\]]*\])?\{[^}]*\}/g, '□'); // zone vide -> □
+        out = out.replace(/\\square(?![a-zA-Z])/g, '\u25A1'); // trou littéral -> □
         out = out.replace(/\\overrightarrow\{/g, '\\vec{');
         out = out.replace(/\\differentialD/g, 'd');
         out = out.replace(/\\mleft/g, '\\left').replace(/\\mright/g, '\\right');
@@ -546,6 +547,22 @@ window.Matheasy = window.Matheasy || {};
                 b.title = it.title || it.latex;
                 b.addEventListener('click', function () {
                     var field = (M.activeField && document.body.contains(M.activeField)) ? M.activeField : mf;
+                    if (it.action === 'box') {
+                        try {
+                            field.focus();
+                            var collapsed = true;
+                            try { collapsed = field.selection.ranges.every(function (r) { return r[0] === r[1]; }); } catch (eSel) { /* ignoré */ }
+                            if (collapsed) {
+                                // rien de sélectionné : on prend toute la ligne courante
+                                for (var up = 0; up < 5; up++) { field.executeCommand('moveAfterParent'); }
+                                field.executeCommand('moveToGroupStart');
+                                field.executeCommand('extendToGroupEnd');
+                            }
+                            field.insert('\\boxed{#@}', { format: 'latex' });
+                        } catch (eBox) { setStatus('Encadré impossible : ' + eBox.message, true); }
+                        refreshNoteOpts();
+                        return;
+                    }
                     if (it.op && M.arrayEdit && field.getValue && field.setValue) {
                         var cur = field.getValue('latex');
                         var nl = M.arrayEdit(cur, it.op);

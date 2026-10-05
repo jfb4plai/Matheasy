@@ -22,6 +22,8 @@
         document.getElementById('run-md').addEventListener('click', convertToMarkdown);
         document.getElementById('run-roundtrip').addEventListener('click', roundTripJson);
         document.getElementById('run-summary').addEventListener('click', summarizeEquations);
+        document.getElementById('run-dstyle').addEventListener('click', displayStyleTest);
+        document.getElementById('run-leftjson').addEventListener('click', leftAlignTest);
         document.getElementById('clear-events').addEventListener('click', function () { document.getElementById('events').value = ''; });
     };
 
@@ -262,6 +264,57 @@
             parts.push(k + ':' + compact(n[k]));
         }
         return (n.type || 'obj') + '{' + parts.join(' ') + '}';
+    }
+
+    // Expérience : fraction en pleine taille dans une ligne (style d'affichage) ?
+    function displayStyleTest() {
+        document.getElementById('log').value = '';
+        var ns = 'xmlns="http://www.w3.org/1998/Math/MathML"';
+        window.Asc.scope.dstyle = [
+            { label: '1) référence : \\frac{3}{4} (LaTeX)', text: '\\frac{3}{4}', format: 'latex' },
+            { label: '2) \\displaystyle\\frac{3}{4} (LaTeX)', text: '\\displaystyle\\frac{3}{4}', format: 'latex' },
+            { label: '3) mstyle displaystyle (MathML)', text: '<math ' + ns + '><mstyle displaystyle="true"><mfrac><mn>3</mn><mn>4</mn></mfrac></mstyle></math>', format: 'mathml' }
+        ];
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var out = [];
+            var T = Asc.scope.dstyle;
+            for (var i = 0; i < T.length; i++) {
+                try {
+                    doc.EnterText(T[i].label + '  ');
+                    var ok = doc.AddMathEquation(T[i].text, T[i].format);
+                    out.push(T[i].label + ' -> ' + ok);
+                    if (i < T.length - 1) { doc.InsertParagraphBreak(); }
+                } catch (e) { out.push(T[i].label + ' ERREUR : ' + e.message); }
+            }
+            return out;
+        }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n') + '\nRegarde le document : une fraction est-elle plus grande que la référence ?'); });
+    }
+
+    // Expérience : aligner à gauche une équation centrée (affichage) en modifiant son JSON (oMathParaPr.jc)
+    function leftAlignTest() {
+        document.getElementById('log').value = '';
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var p = doc.GetCurrentParagraph();
+            if (!p) { return JSON.stringify({ err: 'Aucun paragraphe courant.' }); }
+            var j = p.ToJSON(false, false);
+            var obj = JSON.parse(typeof j === 'string' ? j : JSON.stringify(j));
+            var n = 0;
+            (function walk(x) {
+                if (!x || typeof x !== 'object') { return; }
+                if (Array.isArray(x)) { x.forEach(walk); return; }
+                if (x.type === 'paraMath') { x.oMathParaPr = x.oMathParaPr || {}; x.oMathParaPr.jc = 'left'; n++; }
+                for (var k in x) { walk(x[k]); }
+            })(obj);
+            if (!n) { return JSON.stringify({ err: 'Pas d\'équation centrée (paraMath) dans ce paragraphe.' }); }
+            var el = Api.FromJSON(JSON.stringify(obj));
+            var first = Array.isArray(el) ? el[0] : el;
+            p.ReplaceByElement(first);
+            return JSON.stringify({ ok: true, paraMath: n });
+        }, false, true, function (res) {
+            log('Résultat : ' + res + '\nRegarde le document : l\'équation est-elle maintenant alignée à gauche ?');
+        });
     }
 
     function summarizeEquations() {

@@ -22,7 +22,7 @@ window.Matheasy = window.Matheasy || {};
         8741: '\\parallel', 8869: '\\perp', 8736: '\\angle', 9651: '\\triangle', 8764: '\\sim',
         176: '^\\circ', 8728: '\\circ', 8722: '-', 8943: '\\cdots', 8230: '\\ldots', 8943: '\\cdots',
         8477: '\\mathbb{R}', 8469: '\\mathbb{N}', 8484: '\\mathbb{Z}', 8474: '\\mathbb{Q}', 8450: '\\mathbb{C}',
-        9633: '\\placeholder{}', 11034: '\\placeholder{}',
+        9633: '\\square', 11034: '\\placeholder{}',
         945: '\\alpha', 946: '\\beta', 947: '\\gamma', 948: '\\delta', 949: '\\varepsilon', 1013: '\\epsilon',
         950: '\\zeta', 951: '\\eta', 952: '\\theta', 977: '\\vartheta', 953: '\\iota', 954: '\\kappa',
         955: '\\lambda', 956: '\\mu', 957: '\\nu', 958: '\\xi', 960: '\\pi', 961: '\\rho', 963: '\\sigma',
