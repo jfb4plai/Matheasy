@@ -9,7 +9,7 @@
     <script type="module" src="https://cdn.jsdelivr.net/npm/mathlive"></script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.3.0 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.3.1 — prototype</span></h2>
 
     <div id="detect" class="detect" style="display:none">Formule détectée sous le curseur. <button id="btn-detect-edit" type="button">Modifier cette formule</button></div>
 
@@ -17,6 +17,13 @@
     <div id="palette" class="palette"></div>
 
     <math-field id="mf" class="field" placeholder="\text{Écris ou compose ta formule ici}"></math-field>
+
+    <input id="note0" class="note note0" type="text" style="display:none" placeholder="Commentaire à droite de cette ligne (ex. × 2) — facultatif">
+    <div id="steps" class="steps"></div>
+    <div id="multihint" class="hint" style="display:none">Résolution : chaque ligne devient un paragraphe du document, avec son commentaire à droite.</div>
+    <div class="row">
+        <button id="btn-addline" type="button" title="Ajoute une ligne de résolution sous la précédente">+ Ligne de résolution</button>
+    </div>
 
     <div class="row">
         <button id="btn-insert" class="primary" type="button">Insérer dans le document</button>

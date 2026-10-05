@@ -83,8 +83,102 @@ window.Matheasy = window.Matheasy || {};
 
     M.UNSUPPORTED = ['\\cancel', '\\boxed', '\\color', '\\textcolor'];
 
+    // ---- Résolution à plusieurs lignes : une ligne = un paragraphe, commentaire facultatif à droite ----
+    M.activeField = null;
+    function trackFocus(field) { field.addEventListener('focusin', function () { M.activeField = field; }); }
+
+    function refreshSteps() {
+        var many = $('steps').children.length > 0;
+        $('note0').style.display = many ? 'block' : 'none';
+        $('multihint').style.display = many ? 'block' : 'none';
+    }
+
+    function addRow() {
+        var row = document.createElement('div');
+        row.className = 'steprow';
+        var f = document.createElement('math-field');
+        f.className = 'field step';
+        f.setAttribute('placeholder', '\\text{Ligne suivante}');
+        try { f.mathVirtualKeyboardPolicy = 'manual'; } catch (e) { /* ignoré */ }
+        var note = document.createElement('input');
+        note.type = 'text';
+        note.className = 'note';
+        note.placeholder = 'Commentaire à droite (ex. × 2, ÷ 3) — facultatif';
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'delrow';
+        del.title = 'Supprimer cette ligne';
+        del.textContent = '✕';
+        del.addEventListener('click', function () { row.parentNode.removeChild(row); refreshSteps(); });
+        row.appendChild(f); row.appendChild(note); row.appendChild(del);
+        $('steps').appendChild(row);
+        trackFocus(f);
+        refreshSteps();
+        setTimeout(function () { try { f.focus(); } catch (e2) { /* ignoré */ } }, 50);
+    }
+
+    function collectLines() {
+        var lines = [];
+        var mf = $('mf');
+        lines.push({ raw: (mf.getValue ? mf.getValue('latex') : '') || '', note: $('note0').value });
+        Array.prototype.forEach.call($('steps').children, function (row) {
+            var f = row.querySelector('math-field');
+            lines.push({ raw: (f && f.getValue ? f.getValue('latex') : '') || '', note: row.querySelector('.note').value });
+        });
+        return lines.filter(function (l) { return l.raw.trim() !== ''; });
+    }
+
+    function insertSteps() {
+        var lines = collectLines();
+        if (!lines.length) { setStatus('Rien à insérer : toutes les lignes sont vides.', true); return; }
+        var prepared = [];
+        for (var i = 0; i < lines.length; i++) {
+            var latex = M.sanitizeLatex(lines[i].raw);
+            var bad = M.UNSUPPORTED.filter(function (c) { return latex.indexOf(c) !== -1; });
+            if (bad.length) { setStatus('Ligne ' + (i + 1) + ' : commande non prise en charge par ONLYOFFICE : ' + bad.join(', ') + '.', true); return; }
+            prepared.push({ latex: latex, note: (lines[i].note || '').trim() });
+        }
+        window.Asc.scope.matheasyLines = prepared;
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var L = Asc.scope.matheasyLines;
+            var res = { ok: 0, fail: 0, noteSkipped: false, errors: [] };
+            var canText = (typeof doc.EnterText === 'function');
+            var canBreak = (typeof doc.InsertParagraphBreak === 'function');
+            for (var i = 0; i < L.length; i++) {
+                try {
+                    if (canText) { doc.EnterText('​'); }
+                    var ok = doc.AddMathEquation(L[i].latex, 'latex');
+                    if (ok === false) { res.fail++; } else { res.ok++; }
+                    if (L[i].note) {
+                        if (canText) { doc.EnterText('     ' + L[i].note); } else { res.noteSkipped = true; }
+                    }
+                    if (i < L.length - 1) {
+                        if (canBreak) { doc.InsertParagraphBreak(); } else { res.errors.push('InsertParagraphBreak absent'); }
+                    }
+                } catch (e) { res.fail++; res.errors.push('ligne ' + (i + 1) + ' : ' + e.message); }
+            }
+            return JSON.stringify(res);
+        }, false, true, function (out) {
+            var r = {}; try { r = JSON.parse(out); } catch (e) { /* ignoré */ }
+            var msg = (r.ok || 0) + ' ligne(s) insérée(s)' + (r.fail ? ', ' + r.fail + ' échec(s)' : '') + '.';
+            if (r.noteSkipped) { msg += ' Commentaires non insérés (EnterText absent).'; }
+            if (r.errors && r.errors.length) { msg += ' ' + r.errors.join(' ; '); }
+            setStatus(msg, !!(r.fail || (r.errors && r.errors.length)));
+            if (!r.fail) {
+                if ($('autoclear').checked) {
+                    var m = $('mf'); if (m.setValue) { m.setValue(''); }
+                    $('note0').value = '';
+                    $('steps').innerHTML = ''; refreshSteps();
+                }
+                if ($('closeafter').checked) { window.Asc.plugin.executeCommand('close', ''); }
+            }
+        });
+    }
+
     function insertIntoDocument() {
         var mf = $('mf');
+        if (!M.replaceMode && $('steps').children.length > 0) { insertSteps(); return; }
         var raw = (mf.getValue ? mf.getValue('latex') : mf.value) || '';
         if (!raw.trim()) { setStatus('Rien à insérer : le champ est vide.', true); return; }
         var latex = M.sanitizeLatex(raw);
@@ -266,7 +360,8 @@ window.Matheasy = window.Matheasy || {};
                 b.textContent = it.label;
                 b.title = it.title || it.latex;
                 b.addEventListener('click', function () {
-                    if (mf.insert) { mf.insert(it.latex, { focus: true, format: 'latex' }); }
+                    var field = (M.activeField && document.body.contains(M.activeField)) ? M.activeField : mf;
+                    if (field.insert) { field.insert(it.latex, { focus: true, format: 'latex' }); }
                     else { setStatus('Éditeur MathLive non chargé.', true); }
                 });
                 grid.appendChild(b);
@@ -326,6 +421,9 @@ window.Matheasy = window.Matheasy || {};
         if ($('btn-detect-edit')) { $('btn-detect-edit').addEventListener('click', function () { editSelection(false); }); }
         buildPalettes(mf);
         $('btn-insert').addEventListener('click', insertIntoDocument);
+        $('btn-addline').addEventListener('click', addRow);
+        trackFocus(mf);
+        refreshSteps();
         $('btn-edit').addEventListener('click', function () { editSelection(false); });
         $('btn-cancel-edit').addEventListener('click', function () { M.setReplaceMode(false); setStatus('Modification annulée.', false); });
         $('btn-clear').addEventListener('click', function () { if (mf.setValue) { mf.setValue(''); } mf.focus(); });

@@ -216,7 +216,7 @@
         try {
             window.Asc.plugin.executeMethod('AddContextMenuItem', [{
                 guid: window.Asc.plugin.guid,
-                items: [{ id: 'matheasy-edit', text: { en: 'Edit with Matheasy', fr: 'Modifier avec Matheasy' }, items: [] }]
+                items: [{ id: 'matheasy-edit', text: { en: 'Edit with Matheasy', fr: 'Modifier avec Matheasy' } }]
             }]);
         } catch (e) { logEvent('AddContextMenuItem ERREUR', e.message); }
     };
