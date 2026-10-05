@@ -19,6 +19,57 @@ window.Matheasy = window.Matheasy || {};
         el.className = isError ? 'status error' : 'status';
     }
 
+    // Lit un argument LaTeX à partir de la position i : {...} (équilibré), \commande, ou un caractère
+    function readArg(s, i) {
+        while (i < s.length && /\s/.test(s[i])) { i++; }
+        if (i >= s.length) { return null; }
+        var start = i;
+        if (s[i] === '{') {
+            var depth = 0;
+            for (; i < s.length; i++) {
+                if (s[i] === '{') { depth++; }
+                else if (s[i] === '}') { depth--; if (depth === 0) { i++; break; } }
+            }
+            return { text: s.slice(start + 1, i - 1), end: i };
+        }
+        if (s[i] === '\\') {
+            var m = /^\\([a-zA-Z]+|.)/.exec(s.slice(i));
+            return { text: m[0], end: i + m[0].length };
+        }
+        return { text: s[i], end: i + 1 };
+    }
+
+    // \frac23 -> \frac{2}{3} ; \sqrt2 -> \sqrt{2} ; \binom nk -> \binom{n}{k} (le moteur exige les accolades)
+    M.bracesShorthand = function (latex) {
+        var out = '', i = 0, re = /\\(frac|dfrac|tfrac|binom|sqrt)(?![a-zA-Z])/g, m;
+        while ((m = re.exec(latex)) !== null) {
+            out += latex.slice(i, m.index);
+            var cmd = m[1] === 'dfrac' || m[1] === 'tfrac' ? 'frac' : m[1];
+            var pos = m.index + m[0].length;
+            var piece = '\\' + cmd;
+            if (cmd === 'sqrt') {
+                var q = pos; while (q < latex.length && /\s/.test(latex[q])) { q++; }
+                if (latex[q] === '[') {
+                    var close = latex.indexOf(']', q);
+                    if (close !== -1) { piece += latex.slice(q, close + 1); pos = close + 1; }
+                }
+                var a = readArg(latex, pos);
+                if (a) { piece += '{' + M.bracesShorthand(a.text) + '}'; pos = a.end; }
+            } else {
+                for (var k = 0; k < 2; k++) {
+                    var arg = readArg(latex, pos);
+                    if (!arg) { break; }
+                    piece += '{' + M.bracesShorthand(arg.text) + '}';
+                    pos = arg.end;
+                }
+            }
+            out += piece;
+            i = pos;
+            re.lastIndex = pos;
+        }
+        return out + latex.slice(i);
+    };
+
     // Adapte le LaTeX produit par MathLive à ce que le moteur d'ONLYOFFICE sait lire (voir corpus)
     M.sanitizeLatex = function (latex) {
         var out = latex;
@@ -26,6 +77,7 @@ window.Matheasy = window.Matheasy || {};
         out = out.replace(/\\overrightarrow\{/g, '\\vec{');
         out = out.replace(/\\differentialD/g, 'd');
         out = out.replace(/\\mleft/g, '\\left').replace(/\\mright/g, '\\right');
+        out = M.bracesShorthand(out);
         return out;
     };
 
@@ -42,12 +94,22 @@ window.Matheasy = window.Matheasy || {};
             return;
         }
         window.Asc.scope.matheasyLatex = latex;
-        window.Asc.plugin.callCommand(function () {
-            var doc = Api.GetDocument();
-            return doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
-        }, false, true, function (ok) {
-            setStatus(ok === false ? 'ONLYOFFICE a refusé la formule.' : 'Équation insérée dans le document.', ok === false);
-        });
+        var mode = $('mode').value;
+        var doInsert = function () {
+            window.Asc.plugin.callCommand(function () {
+                var doc = Api.GetDocument();
+                return doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
+            }, false, true, function (ok) {
+                setStatus(ok === false ? 'ONLYOFFICE a refusé la formule.' : 'Équation insérée dans le document.', ok === false);
+                if (ok !== false && $('autoclear').checked && mf.setValue) { mf.setValue(''); }
+            });
+        };
+        if (mode === 'inline') {
+            // Espace invisible d'abord : le paragraphe n'est plus vide, l'équation devrait rester dans le texte
+            window.Asc.plugin.executeMethod('InputText', ['​'], doInsert);
+        } else {
+            doInsert();
+        }
     }
 
     // Annote la sélection du document : color = [r,g,b] | 'auto' ; strike = true/false/undefined

@@ -9,16 +9,21 @@
     <script type="module" src="https://cdn.jsdelivr.net/npm/mathlive"></script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.1.0 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.1.1 — prototype</span></h2>
 
     <div id="tabs" class="tabs"></div>
     <div id="palette" class="palette"></div>
 
-    <math-field id="mf" class="field" placeholder="Écris ou compose ta formule ici"></math-field>
+    <math-field id="mf" class="field" placeholder="\text{Écris ou compose ta formule ici}"></math-field>
 
     <div class="row">
         <button id="btn-insert" class="primary" type="button">Insérer dans le document</button>
         <button id="btn-clear" type="button">Effacer</button>
+        <label class="opt">Insertion : <select id="mode">
+            <option value="inline">Dans le texte (à gauche)</option>
+            <option value="cursor">Au curseur (réglage ONLYOFFICE, centrée)</option>
+        </select></label>
+        <label class="opt"><input type="checkbox" id="autoclear" checked> Vider le champ après insertion</label>
     </div>
 
     <fieldset class="anno">
