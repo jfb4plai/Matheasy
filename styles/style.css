@@ -1,4 +1,5 @@
-body { font-family: "Segoe UI", sans-serif; padding: 10px 12px; font-size: 13px; }
+html, body { height: 100%; margin: 0; overflow-y: auto !important; }
+body { font-family: "Segoe UI", sans-serif; padding: 10px 12px 40px; font-size: 13px; box-sizing: border-box; }
 h2 { margin: 0 0 8px; font-size: 18px; }
 .version { font-size: 12px; font-weight: normal; color: #666; }
 button { font: inherit; cursor: pointer; }
