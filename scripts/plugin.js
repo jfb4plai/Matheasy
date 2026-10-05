@@ -15,6 +15,8 @@
         document.getElementById('run-corpus').addEventListener('click', function () { run('corpus/formules.json', false); });
         document.getElementById('run-exp').addEventListener('click', function () { run('corpus/experiences.json', true); });
         document.getElementById('run-probe').addEventListener('click', probeApi);
+        document.getElementById('run-fmt').addEventListener('click', testFormatSelection);
+        document.getElementById('run-json').addEventListener('click', readSelectionJson);
     };
 
     window.Asc.plugin.button = function () {
@@ -59,6 +61,50 @@
             try { res.push('== Math* créables ==\n' + (function () { var o = []; for (var k in Api) { if (/^Create.*Math|^Create(Box|Border|Group|Nary|Func|Delimiter|Matrix|Accent|Bar|Limit|Radical|Fraction|Script)/i.test(k)) o.push(k); } return o.sort().join(', '); })()); } catch (e) { res.push('Create* KO ' + e.message); }
             try { var t = doc.GetSelectedText ? doc.GetSelectedText() : '(pas de GetSelectedText)'; res.push('== Texte sélectionné ==\n' + JSON.stringify(t)); } catch (e) { res.push('GetSelectedText KO ' + e.message); }
             return res;
+        }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n\n')); });
+    }
+
+    // Test : appliquer rouge + barré à la sélection (ex. "2x" sélectionné DANS une équation)
+    function testFormatSelection() {
+        document.getElementById('log').value = '';
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var out = [];
+            var r = null;
+            try { r = doc.GetRangeBySelect(); } catch (e) { out.push('GetRangeBySelect ERREUR : ' + e.message); }
+            if (!r) { out.push('GetRangeBySelect a renvoyé : ' + r); return out; }
+            try { out.push('SetColor(255,0,0) -> ' + r.SetColor(255, 0, 0, false)); } catch (e) { out.push('SetColor ERREUR : ' + e.message); }
+            try { out.push('SetStrikeout(true) -> ' + r.SetStrikeout(true)); } catch (e) { out.push('SetStrikeout ERREUR : ' + e.message); }
+            out.push('Regarde le document : la sélection est-elle devenue rouge et/ou barrée ?');
+            return out;
+        }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n')); });
+    }
+
+    // Test : lire la sélection en JSON (équation incluse ?)
+    function readSelectionJson() {
+        document.getElementById('log').value = '';
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var out = [];
+            var r = null;
+            try { r = doc.GetRangeBySelect(); } catch (e) { out.push('GetRangeBySelect ERREUR : ' + e.message); }
+            if (!r) { out.push('GetRangeBySelect a renvoyé : ' + r); }
+            else {
+                try {
+                    var j = r.ToJSON(false);
+                    var str = (typeof j === 'string') ? j : JSON.stringify(j);
+                    out.push('Range.ToJSON : ' + str.length + ' caractères\n' + str.substring(0, 6000));
+                } catch (e) { out.push('Range.ToJSON ERREUR : ' + e.message); }
+            }
+            try {
+                var el = doc.GetElement(0);
+                if (el && el.ToJSON) {
+                    var pj = el.ToJSON(false, false);
+                    var ps = (typeof pj === 'string') ? pj : JSON.stringify(pj);
+                    out.push('Paragraphe 0 .ToJSON : ' + ps.length + ' caractères\n' + ps.substring(0, 6000));
+                }
+            } catch (e) { out.push('Paragraph.ToJSON ERREUR : ' + e.message); }
+            return out;
         }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n\n')); });
     }
 
