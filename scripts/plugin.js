@@ -164,23 +164,35 @@
             out.push('FromJSON ok. Classe : ' + cls + '\nMéthodes de l\'objet : ' + keys.sort().join(', '));
 
             var label = Api.CreateParagraph();
-            label.AddText('[Aller-retour JSON v2] éléments reconstruits ci-dessous :');
+            label.AddText('[Aller-retour JSON v3] éléments reconstruits ci-dessous :');
             doc.Push(label);
 
             var pushed = 0;
-            try {
-                if (el.GetElementsCount && el.GetElement) {
-                    var n = el.GetElementsCount();
-                    out.push('L\'objet contient ' + n + ' élément(s).');
-                    for (var i = 0; i < n; i++) {
-                        try { doc.Push(el.GetElement(i)); pushed++; } catch (e1) { out.push('Push élément ' + i + ' ERREUR : ' + e1.message); }
-                    }
-                } else {
-                    doc.Push(el); pushed++;
-                    out.push('Pas de GetElementsCount : objet poussé tel quel.');
-                }
-            } catch (e2) { out.push('Extraction ERREUR : ' + e2.message); }
+            var items = Array.isArray(el) ? el : [el];
+            out.push('Tableau : ' + Array.isArray(el) + ', longueur : ' + items.length);
+            for (var i = 0; i < items.length; i++) {
+                var it = items[i];
+                var info = 'élément ' + i + ' : typeof ' + typeof it;
+                try {
+                    var ks = [];
+                    for (var kk in it) { ks.push(kk); }
+                    info += ', ' + ks.length + ' méthodes/clés' + (ks.length ? ' (' + ks.slice(0, 12).join(', ') + ')' : '');
+                    if (it && it.GetClassType) { info += ', classe ' + it.GetClassType(); }
+                } catch (eI) { info += ', inspection ERREUR ' + eI.message; }
+                out.push(info);
+                try { doc.Push(it); pushed++; out.push('  Push(' + i + ') ok'); } catch (eP) { out.push('  Push(' + i + ') ERREUR : ' + eP.message); }
+            }
             out.push('Éléments poussés : ' + pushed + '. Regarde la fin du document.');
+            // Seconde voie : InsertContent à la fin (avec une nouvelle reconstruction)
+            try {
+                var el2 = Api.FromJSON(j);
+                var arr2 = Array.isArray(el2) ? el2 : [el2];
+                var lab2 = Api.CreateParagraph();
+                lab2.AddText('[Seconde voie : InsertContent] ci-dessous :');
+                doc.Push(lab2);
+                var res2 = doc.InsertContent(arr2, false);
+                out.push('InsertContent(' + arr2.length + ' élément(s)) -> ' + res2);
+            } catch (e3) { out.push('InsertContent ERREUR : ' + e3.message); }
             out.push('doc.InsertContent existe : ' + (typeof doc.InsertContent));
             return out;
         }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n')); });
