@@ -17,6 +17,9 @@
         document.getElementById('run-probe').addEventListener('click', probeApi);
         document.getElementById('run-fmt').addEventListener('click', testFormatSelection);
         document.getElementById('run-json').addEventListener('click', readSelectionJson);
+        document.getElementById('run-methods').addEventListener('click', listAllMethods);
+        document.getElementById('run-md').addEventListener('click', convertToMarkdown);
+        document.getElementById('run-roundtrip').addEventListener('click', roundTripJson);
     };
 
     window.Asc.plugin.button = function () {
@@ -106,6 +109,70 @@
             } catch (e) { out.push('Paragraph.ToJSON ERREUR : ' + e.message); }
             return out;
         }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n\n')); });
+    }
+
+    // Liste complète (sans filtre) des méthodes de quelques objets
+    function listAllMethods() {
+        document.getElementById('log').value = '';
+        window.Asc.plugin.callCommand(function () {
+            function all(obj) {
+                var out = [];
+                try { for (var k in obj) { out.push(k); } } catch (e) { out.push('ERR ' + e.message); }
+                return out.sort().join(', ');
+            }
+            var doc = Api.GetDocument();
+            var res = [];
+            res.push('== Api ==\n' + all(Api));
+            res.push('== ApiDocument ==\n' + all(doc));
+            try { var r = doc.GetRangeBySelect(); res.push('== Range (sélection) ==\n' + all(r)); } catch (e) { res.push('Range KO ' + e.message); }
+            try { res.push('== Paragraphe ==\n' + all(Api.CreateParagraph())); } catch (e) { res.push('Paragraph KO ' + e.message); }
+            return res;
+        }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n\n')); });
+    }
+
+    // Convertit tout le document en Markdown : les équations ressortent-elles en LaTeX ?
+    function convertToMarkdown() {
+        document.getElementById('log').value = '';
+        window.Asc.plugin.callCommand(function () {
+            var out = [];
+            try {
+                var md = Api.ConvertDocument('markdown');
+                var str = (typeof md === 'string') ? md : JSON.stringify(md);
+                out.push('ConvertDocument(markdown) : ' + str.length + ' caractères\n' + str.substring(0, 6000));
+            } catch (e) { out.push('ConvertDocument ERREUR : ' + e.message); }
+            return out;
+        }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n\n')); });
+    }
+
+    // Aller-retour : sélection -> JSON -> FromJSON -> ajouté en fin de document
+    function roundTripJson() {
+        document.getElementById('log').value = '';
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var out = [];
+            var r = null;
+            try { r = doc.GetRangeBySelect(); } catch (e) { out.push('GetRangeBySelect ERREUR : ' + e.message); }
+            if (!r) { out.push('Aucune sélection (renvoi : ' + r + ')'); return out; }
+            var j;
+            try { j = r.ToJSON(false); if (typeof j !== 'string') { j = JSON.stringify(j); } out.push('ToJSON ok (' + j.length + ' caractères)'); } catch (e) { out.push('ToJSON ERREUR : ' + e.message); return out; }
+            var el = null;
+            try { el = Api.FromJSON(j); out.push('FromJSON ok, classe : ' + (el && el.GetClassType ? el.GetClassType() : typeof el)); } catch (e) { out.push('FromJSON ERREUR : ' + e.message); return out; }
+            try {
+                var label = Api.CreateParagraph();
+                label.AddText('[Aller-retour JSON] copie reconstruite ci-dessous :');
+                doc.Push(label);
+                doc.Push(el);
+                out.push('doc.Push(element) ok : regarde la fin du document');
+            } catch (e1) {
+                out.push('doc.Push(element) ERREUR : ' + e1.message);
+                try {
+                    var first = el.GetElement(0);
+                    doc.Push(first);
+                    out.push('Repli doc.Push(GetElement(0)) ok : regarde la fin du document');
+                } catch (e2) { out.push('Repli ERREUR : ' + e2.message); }
+            }
+            return out;
+        }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n')); });
     }
 
     function run(file, isExperiment) {
