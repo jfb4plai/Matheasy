@@ -14,6 +14,7 @@ Pas d'objet OLE : les formules sont des **équations natives** du document (ins�
 - **Non pris en charge par le moteur** (testé) : `\cancel`, `\boxed` (LaTeX), `\color`, `\textcolor`, `\overrightarrow`.
 - **v0.1.0 (prototype, non testé)** : fenêtre d'édition avec champ [MathLive](https://github.com/arnog/mathlive) (MIT, chargé depuis jsDelivr), palettes par thème, insertion en équation native, boutons d'annotation (couleur, barré) sur la sélection. Les outils de test restent dans un volet « Outils de test ».
 - **Réédition d'une équation existante (v0.2.0, non testé)** : bouton « Modifier la formule sélectionnée » ; `scripts/json2latex.js` convertit le JSON ONLYOFFICE en LaTeX (tests : `node tests/json2latex.test.js`, 18 cas reconstruits d'après les arbres observés). Limite connue : la lecture par sélection (`Range.ToJSON`) exporte le contenu des racines vide ; la lecture du paragraphe entier est correcte.
+- **v0.5.0 (non testé dans ONLYOFFICE)** : champ de saisie multi-lignes. Entrée = nouvelle ligne (`\\displaylines` de MathLive), « + Commentaire » ajoute un texte à droite de la ligne, chaque ligne devient un paragraphe du document (`scripts/lines.js`, tests : `node tests/lines.test.js`). Interface vérifiée dans Chromium avec une fausse API ONLYOFFICE.
 - **Événements du document** : seuls `onDocumentContentReady` et `onTargetPositionChanged` sont reçus ; pas de `onClick` / `onDblClick` (donc pas d'ouverture au double-clic).
 
 ## Fabriquer le fichier .plugin

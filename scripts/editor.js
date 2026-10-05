@@ -83,58 +83,43 @@ window.Matheasy = window.Matheasy || {};
 
     M.UNSUPPORTED = ['\\cancel', '\\boxed', '\\color', '\\textcolor'];
 
-    // ---- Résolution à plusieurs lignes : une ligne = un paragraphe, commentaire facultatif à droite ----
+    // ---- Champ multi-lignes : une ligne du champ = un paragraphe du document, commentaire facultatif à droite ----
     M.activeField = null;
-    function trackFocus(field) { field.addEventListener('focusin', function () { M.activeField = field; }); }
 
-    function refreshSteps() {
-        var many = $('steps').children.length > 0;
-        $('note0').style.display = many ? 'block' : 'none';
-        $('multihint').style.display = many ? 'block' : 'none';
-        $('noteopts').style.display = many ? 'block' : 'none';
-    }
-
-    function addRow() {
-        var row = document.createElement('div');
-        row.className = 'steprow';
-        var f = document.createElement('math-field');
-        f.className = 'field step';
-        f.setAttribute('placeholder', '\\text{Ligne suivante}');
-        try { f.mathVirtualKeyboardPolicy = 'manual'; } catch (e) { /* ignoré */ }
-        var note = document.createElement('input');
-        note.type = 'text';
-        note.className = 'note';
-        note.placeholder = 'Commentaire à droite (ex. × 2, ÷ 3) — facultatif';
-        var del = document.createElement('button');
-        del.type = 'button';
-        del.className = 'delrow';
-        del.title = 'Supprimer cette ligne';
-        del.textContent = '✕';
-        del.addEventListener('click', function () { row.parentNode.removeChild(row); refreshSteps(); });
-        row.appendChild(f); row.appendChild(note); row.appendChild(del);
-        $('steps').appendChild(row);
-        trackFocus(f);
-        refreshSteps();
-        setTimeout(function () { try { f.focus(); } catch (e2) { /* ignoré */ } }, 50);
-    }
-
-    function collectLines() {
-        var lines = [];
+    function refreshNoteOpts() {
         var mf = $('mf');
-        lines.push({ raw: (mf.getValue ? mf.getValue('latex') : '') || '', note: $('note0').value });
-        Array.prototype.forEach.call($('steps').children, function (row) {
-            var f = row.querySelector('math-field');
-            lines.push({ raw: (f && f.getValue ? f.getValue('latex') : '') || '', note: row.querySelector('.note').value });
-        });
-        return lines.filter(function (l) { return l.raw.trim() !== ''; });
+        var v = (mf.getValue ? mf.getValue('latex') : '') || '';
+        var show = v.indexOf('\\text{') !== -1 || v.indexOf('\\\\') !== -1 || v.indexOf('displaylines') !== -1;
+        $('noteopts').style.display = show ? 'block' : 'none';
     }
 
-    function insertSteps() {
-        var lines = collectLines();
+    // Nouvelle ligne : on quitte d'abord un éventuel commentaire (mode texte), puis MathLive ajoute la ligne
+    function newLine() {
+        var mf = $('mf');
+        try {
+            mf.focus();
+            mf.executeCommand(['switchMode', 'math']);
+            mf.executeCommand('addRowAfter');
+        } catch (e) { /* ignoré */ }
+        refreshNoteOpts();
+    }
+
+    // Commentaire : espace puis mode texte (le texte tapé est conservé tel quel, avec ses espaces)
+    function addComment() {
+        var mf = $('mf');
+        try {
+            mf.focus();
+            mf.insert('\\quad', { format: 'latex' });
+            mf.executeCommand(['switchMode', 'text']);
+        } catch (e) { /* ignoré */ }
+        refreshNoteOpts();
+    }
+
+    function insertSteps(lines) {
         if (!lines.length) { setStatus('Rien à insérer : toutes les lignes sont vides.', true); return; }
         var prepared = [];
         for (var i = 0; i < lines.length; i++) {
-            var latex = M.sanitizeLatex(lines[i].raw);
+            var latex = M.sanitizeLatex(lines[i].latex);
             var bad = M.UNSUPPORTED.filter(function (c) { return latex.indexOf(c) !== -1; });
             if (bad.length) { setStatus('Ligne ' + (i + 1) + ' : commande non prise en charge par ONLYOFFICE : ' + bad.join(', ') + '.', true); return; }
             prepared.push({ latex: latex, note: (lines[i].note || '').trim() });
@@ -186,8 +171,7 @@ window.Matheasy = window.Matheasy || {};
             if (!r.fail) {
                 if ($('autoclear').checked) {
                     var m = $('mf'); if (m.setValue) { m.setValue(''); }
-                    $('note0').value = '';
-                    $('steps').innerHTML = ''; refreshSteps();
+                    refreshNoteOpts();
                 }
                 if ($('closeafter').checked) { window.Asc.plugin.executeCommand('close', ''); }
             }
@@ -196,10 +180,19 @@ window.Matheasy = window.Matheasy || {};
 
     function insertIntoDocument() {
         var mf = $('mf');
-        if (!M.replaceMode && $('steps').children.length > 0) { insertSteps(); return; }
         var raw = (mf.getValue ? mf.getValue('latex') : mf.value) || '';
         if (!raw.trim()) { setStatus('Rien à insérer : le champ est vide.', true); return; }
-        var latex = M.sanitizeLatex(raw);
+        var lines = M.splitLines(raw);
+        if (!lines.length) { setStatus('Rien à insérer : le champ est vide.', true); return; }
+        if (lines.length > 1 || lines[0].note) {
+            if (M.replaceMode) {
+                setStatus('En mode modification, une seule ligne sans commentaire peut remplacer la formule. Clique sur « Annuler » pour insérer plusieurs lignes.', true);
+                return;
+            }
+            insertSteps(lines);
+            return;
+        }
+        var latex = M.sanitizeLatex(lines[0].latex);
         var bad = M.UNSUPPORTED.filter(function (c) { return latex.indexOf(c) !== -1; });
         if (bad.length) {
             setStatus('Commande non prise en charge par ONLYOFFICE : ' + bad.join(', ') + '. Retire-la (voir les boutons d\'annotation).', true);
@@ -449,9 +442,18 @@ window.Matheasy = window.Matheasy || {};
         if ($('btn-detect-edit')) { $('btn-detect-edit').addEventListener('click', function () { editSelection(false); }); }
         buildPalettes(mf);
         $('btn-insert').addEventListener('click', insertIntoDocument);
-        $('btn-addline').addEventListener('click', addRow);
-        trackFocus(mf);
-        refreshSteps();
+        $('btn-newline').addEventListener('click', newLine);
+        $('btn-comment').addEventListener('click', addComment);
+        mf.addEventListener('input', refreshNoteOpts);
+        // Entrée = nouvelle ligne (dans une matrice : nouvelle ligne de la matrice) ; Maj+Suppr supprime la ligne (MathLive)
+        mf.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' && !ev.ctrlKey && !ev.metaKey && !ev.altKey && !ev.shiftKey) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                newLine();
+            }
+        }, true);
+        refreshNoteOpts();
         $('btn-edit').addEventListener('click', function () { editSelection(false); });
         $('btn-cancel-edit').addEventListener('click', function () { M.setReplaceMode(false); setStatus('Modification annulée.', false); });
         $('btn-clear').addEventListener('click', function () { if (mf.setValue) { mf.setValue(''); } mf.focus(); });
