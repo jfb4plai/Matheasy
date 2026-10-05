@@ -151,7 +151,13 @@ window.Matheasy = window.Matheasy || {};
                     var ok = doc.AddMathEquation(L[i].latex, 'latex');
                     if (ok === false) { res.fail++; } else { res.ok++; }
                     if (L[i].note) {
-                        if (canText) { doc.EnterText('     ' + L[i].note); } else { res.noteSkipped = true; }
+                        if (canText) {
+                            // Sortir de l'équation (curseur d'un cran à droite) pour écrire le commentaire en texte ordinaire
+                            if (typeof doc.MoveCursorRight === 'function') {
+                                try { doc.MoveCursorRight(1, false, false); res.moved = (res.moved || 0) + 1; } catch (eM) { res.errors.push('MoveCursorRight : ' + eM.message); }
+                            } else { res.errors.push('MoveCursorRight absent : le commentaire peut rester dans la formule'); }
+                            doc.EnterText('     ' + L[i].note);
+                        } else { res.noteSkipped = true; }
                     }
                     if (i < L.length - 1) {
                         if (canBreak) { doc.InsertParagraphBreak(); } else { res.errors.push('InsertParagraphBreak absent'); }
