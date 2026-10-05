@@ -8,12 +8,13 @@
     'use strict';
 
     function log(msg) {
-        document.getElementById('log').textContent += msg + '\n';
+        document.getElementById('log').value += msg + '\n';
     }
 
     window.Asc.plugin.init = function () {
         document.getElementById('run-corpus').addEventListener('click', function () { run('corpus/formules.json', false); });
         document.getElementById('run-exp').addEventListener('click', function () { run('corpus/experiences.json', true); });
+        document.getElementById('run-probe').addEventListener('click', probeApi);
     };
 
     window.Asc.plugin.button = function () {
@@ -37,8 +38,32 @@
         });
     }
 
+    // Sonde l'API : liste les méthodes dont le nom évoque équations, couleurs, barré, conversions, sélection
+    function probeApi() {
+        document.getElementById('log').value = '';
+        try { log('Asc.plugin.info : ' + JSON.stringify(window.Asc.plugin.info)); } catch (e) { log('info KO : ' + e.message); }
+        window.Asc.plugin.callCommand(function () {
+            var re = /math|equation|color|colour|strike|border|box|latex|mathml|ooxml|json|convert|select|range|textpr|version/i;
+            function names(obj) {
+                var out = [];
+                try { for (var k in obj) { if (re.test(k)) out.push(k); } } catch (e) { out.push('ERR ' + e.message); }
+                return out.sort().join(', ');
+            }
+            var res = [];
+            var doc = Api.GetDocument();
+            res.push('== Api ==\n' + names(Api));
+            res.push('== ApiDocument ==\n' + names(doc));
+            try { res.push('== Paragraphe (CreateParagraph) ==\n' + names(Api.CreateParagraph())); } catch (e) { res.push('Paragraph KO ' + e.message); }
+            try { res.push('== Run (CreateRun) ==\n' + names(Api.CreateRun())); } catch (e) { res.push('Run KO ' + e.message); }
+            try { var r = doc.GetRangeBySelect(); res.push('== Range (sélection) ==\n' + names(r)); } catch (e) { res.push('GetRangeBySelect KO ' + e.message); }
+            try { res.push('== Math* créables ==\n' + (function () { var o = []; for (var k in Api) { if (/^Create.*Math|^Create(Box|Border|Group|Nary|Func|Delimiter|Matrix|Accent|Bar|Limit|Radical|Fraction|Script)/i.test(k)) o.push(k); } return o.sort().join(', '); })()); } catch (e) { res.push('Create* KO ' + e.message); }
+            try { var t = doc.GetSelectedText ? doc.GetSelectedText() : '(pas de GetSelectedText)'; res.push('== Texte sélectionné ==\n' + JSON.stringify(t)); } catch (e) { res.push('GetSelectedText KO ' + e.message); }
+            return res;
+        }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n\n')); });
+    }
+
     function run(file, isExperiment) {
-        document.getElementById('log').textContent = '';
+        document.getElementById('log').value = '';
         fetch(file)
             .then(function (r) { return r.json(); })
             .then(function (items) {
