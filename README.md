@@ -12,6 +12,13 @@ Pas d'objet OLE : les formules sont des **équations natives** du document (ins�
 
 Phase 0 : **corpus de test**. `corpus/formules.json` liste des notations du secondaire supérieur ; le plugin les insère dans un document pour mesurer ce que l'équation native rend correctement. Rien n'est encore validé dans un ONLYOFFICE réel.
 
+## Fabriquer le fichier .plugin
+
+- Windows (PowerShell) : `.\tools\build-plugin.ps1`
+- Linux/macOS : `./tools/build-plugin.sh`
+
+Résultat : `dist/matheasy.plugin`, à ajouter dans ONLYOFFICE (onglet Plugins).
+
 ## Feuille de route (provisoire)
 
 1. Corpus + test d'insertion (en cours)
