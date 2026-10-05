@@ -53,6 +53,14 @@ const cases = [
 ];
 
 let ko = 0;
+// jsonInfo : l'espace invisible n'est pas du texte
+const eqInline = { type: 'paragraph', content: [{ type: 'run', content: [{ type: 'text', value: '\u200B' }] }, para(R('2x')).content[1]] };
+const eqNote = { type: 'paragraph', content: [{ type: 'run', content: [{ type: 'text', value: '\u200B' }] }, para(R('2x')).content[1], { type: 'run', content: [{ type: 'text', value: '+5 dans chaque membre' }] }] };
+const eqNum = { type: 'paragraph', content: [{ type: 'run', content: [{ type: 'text', value: 0x200B }] }, para(R('2x')).content[1]] };
+for (const [label, j, exp] of [['ZWSP seul (texte)', eqInline, false], ['ZWSP seul (nombre)', eqNum, false], ['ZWSP + commentaire', eqNote, true]]) {
+  const info = M.jsonInfo(j);
+  if (info.hasMath && info.hasText === exp) { console.log('ok  ', 'jsonInfo', label); } else { ko++; console.log('KO  ', 'jsonInfo', label, JSON.stringify(info)); }
+}
 for (const [name, json, expected] of cases) {
   const r = M.jsonToLatex(JSON.parse(JSON.stringify(json)));
   const got = r.latex.replace(/\s+/g, '');

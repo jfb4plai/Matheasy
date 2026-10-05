@@ -229,8 +229,9 @@ window.Matheasy = window.Matheasy || {};
                 if (sig(cur) !== sig(t.json)) { return JSON.stringify({ ok: false, error: 'Le document a changé depuis le chargement de la formule : recharge-la.' }); }
                 p.RemoveAllElements();
                 p.Select();
+                if (t.inline && typeof doc.EnterText === 'function') { doc.EnterText('\u200B'); }
                 var ok = doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
-                return JSON.stringify({ ok: ok, note: '(remplacement dans le paragraphe d\'origine)' });
+                return JSON.stringify({ ok: ok, note: t.inline ? '(remplacement en ligne, dans le paragraphe d\'origine)' : '(remplacement dans le paragraphe d\'origine)' });
             }, false, true, function (res) {
                 var o = {}; try { o = JSON.parse(res); } catch (e) { /* ignoré */ }
                 if (o.error) { setStatus(o.error, true); return; }
@@ -319,7 +320,7 @@ window.Matheasy = window.Matheasy || {};
                 try { info = M.jsonInfo(o.paraJson); } catch (e0) { info = null; }
                 if (info && info.hasMath && !info.hasText) {
                     chosen = o.paraJson;
-                    if (o.idx !== undefined && o.idx !== null) { target = { kind: 'paragraph', idx: o.idx, json: o.paraJson }; }
+                    if (o.idx !== undefined && o.idx !== null) { target = { kind: 'paragraph', idx: o.idx, json: o.paraJson, inline: o.paraJson.indexOf('"paraMath"') === -1 }; }
                 }
             }
             // 2) Sinon : la sélection seule (formule dans du texte), remplacement par insertion sur la sélection
@@ -331,7 +332,16 @@ window.Matheasy = window.Matheasy || {};
                     return;
                 }
             }
-            if (!chosen) { if (!quiet) { setStatus('Aucune formule dans la sélection ou sous le curseur.', true); } return; }
+            if (!chosen) {
+                if (!quiet) {
+                    var mixed = false;
+                    try { var pi = o.paraJson ? M.jsonInfo(o.paraJson) : null; mixed = !!(pi && pi.hasMath && pi.hasText); } catch (eMix) { /* ignoré */ }
+                    setStatus(mixed
+                        ? 'Cette ligne contient du texte en plus de la formule (un commentaire, par exemple) : sélectionne uniquement la formule avec la souris, puis clique sur « Modifier ».'
+                        : 'Aucune formule dans la sélection ou sous le curseur.', true);
+                }
+                return;
+            }
 
             var out;
             try { out = M.jsonToLatex(chosen); } catch (e2) { setStatus('Structure de formule non reconnue : ' + e2.message, true); return; }

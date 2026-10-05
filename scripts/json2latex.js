@@ -225,6 +225,19 @@ window.Matheasy = window.Matheasy || {};
         return { latex: latex, warnings: ctx.warnings };
     };
 
+    // Un run « vide » ne contient que des espaces (dont l'espace invisible U+200B ajouté à l'insertion en ligne)
+    function isBlankRun(n) {
+        var blank = /[\u200B\u00A0\s]/g;
+        return (n.content || []).every(function (it) {
+            if (typeof it === 'string') { return !it.replace(blank, ''); }
+            if (!it || typeof it !== 'object') { return false; }
+            if (it.type === 'space') { return true; }
+            if (typeof it.value === 'string') { return !it.value.replace(blank, ''); }
+            if (typeof it.value === 'number') { return it.value === 0x200B || it.value === 0xA0 || it.value === 32; }
+            return false;
+        });
+    }
+
     /** Indique si le JSON contient une formule et/ou du texte ordinaire (pour éviter d'écraser du texte) */
     M.jsonInfo = function (json) {
         var data = (typeof json === 'string') ? JSON.parse(json) : json;
@@ -233,7 +246,7 @@ window.Matheasy = window.Matheasy || {};
             if (!n || typeof n !== 'object') { return; }
             if (Array.isArray(n)) { n.forEach(walk); return; }
             if (n.type === 'mathRun') { info.hasMath = true; return; }
-            if (n.type === 'run' && n.content && n.content.length) { info.hasText = true; }
+            if (n.type === 'run' && n.content && n.content.length && !isBlankRun(n)) { info.hasText = true; }
             for (var k in n) { if (n[k] && typeof n[k] === 'object') { walk(n[k]); } }
         })(data);
         return info;
