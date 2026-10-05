@@ -210,6 +210,21 @@
         var box = document.getElementById('events');
         if (box) { box.value += line + '\n'; box.scrollTop = box.scrollHeight; }
     }
+    // Menu contextuel (clic droit) : entrée « Modifier avec Matheasy » (expérience, API non vérifiée)
+    window.Asc.plugin.event_onContextMenuShow = function (options) {
+        logEvent('onContextMenuShow', options);
+        try {
+            window.Asc.plugin.executeMethod('AddContextMenuItem', [{
+                guid: window.Asc.plugin.guid,
+                items: [{ id: 'matheasy-edit', text: 'Modifier avec Matheasy' }]
+            }]);
+        } catch (e) { logEvent('AddContextMenuItem ERREUR', e.message); }
+    };
+    window.Asc.plugin.event_onContextMenuClick = function (id) {
+        logEvent('onContextMenuClick', id);
+        if (id === 'matheasy-edit' && window.Matheasy && window.Matheasy.editSelection) { window.Matheasy.editSelection(false); }
+    };
+
     ['onClick', 'onDblClick', 'onTargetPositionChanged', 'onDocumentContentReady', 'onEnableMouseEvent'].forEach(function (name) {
         window.Asc.plugin['event_' + name] = function (data) { logEvent(name, data); };
     });

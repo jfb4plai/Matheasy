@@ -32,6 +32,10 @@ window.Matheasy.PALETTES = [
     },
     {
         id: 'symboles', title: 'Symboles', items: [
+            { label: '=', latex: '=' }, { label: '+', latex: '+' }, { label: '−', latex: '-' },
+            { label: '<', latex: '<' }, { label: '>', latex: '>' }, { label: '≡', latex: '\\equiv' },
+            { label: ',', latex: ',' }, { label: ';', latex: ';' }, { label: ':', latex: ':' },
+            { label: '…', latex: '\\ldots' }, { label: '∣', latex: '\\mid', title: 'Divise / tel que' }, { label: '%', latex: '\\%' },
             { label: '±', latex: '\\pm' }, { label: '×', latex: '\\times' }, { label: '÷', latex: '\\div' },
             { label: '·', latex: '\\cdot' }, { label: '≠', latex: '\\neq' }, { label: '≈', latex: '\\approx' },
             { label: '≤', latex: '\\leq' }, { label: '≥', latex: '\\geq' }, { label: '∞', latex: '\\infty' },

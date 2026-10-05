@@ -224,4 +224,18 @@ window.Matheasy = window.Matheasy || {};
         ctx.warnings = ctx.warnings.filter(function (w) { if (seen[w]) { return false; } seen[w] = 1; return true; });
         return { latex: latex, warnings: ctx.warnings };
     };
+
+    /** Indique si le JSON contient une formule et/ou du texte ordinaire (pour éviter d'écraser du texte) */
+    M.jsonInfo = function (json) {
+        var data = (typeof json === 'string') ? JSON.parse(json) : json;
+        var info = { hasMath: false, hasText: false };
+        (function walk(n) {
+            if (!n || typeof n !== 'object') { return; }
+            if (Array.isArray(n)) { n.forEach(walk); return; }
+            if (n.type === 'mathRun') { info.hasMath = true; return; }
+            if (n.type === 'run' && n.content && n.content.length) { info.hasText = true; }
+            for (var k in n) { if (n[k] && typeof n[k] === 'object') { walk(n[k]); } }
+        })(data);
+        return info;
+    };
 })(window.Matheasy);

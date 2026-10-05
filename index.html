@@ -9,7 +9,7 @@
     <script type="module" src="https://cdn.jsdelivr.net/npm/mathlive"></script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.2.0 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.2.1 — prototype</span></h2>
 
     <div id="tabs" class="tabs"></div>
     <div id="palette" class="palette"></div>
@@ -25,6 +25,7 @@
             <option value="cursor">Au curseur (réglage ONLYOFFICE, centrée)</option>
         </select></label>
         <label class="opt"><input type="checkbox" id="autoclear" checked> Vider le champ après insertion</label>
+        <label class="opt"><input type="checkbox" id="closeafter" checked> Fermer la fenêtre après insertion</label>
     </div>
 
     <div id="editmode" class="editmode" style="display:none">Mode modification : « Insérer » remplace la formule sélectionnée du document. <button id="btn-cancel-edit" type="button">Annuler</button></div>
@@ -43,6 +44,10 @@
 
     <details class="dev">
         <summary>Outils de test (développement)</summary>
+        <label class="opt">Remplacement d'une formule modifiée : <select id="replmethod">
+            <option value="insert">Méthode A : insérer sur la sélection</option>
+            <option value="delete">Méthode B : supprimer puis insérer</option>
+        </select></label>
         <button id="run-corpus" type="button">Insérer le corpus de test</button>
         <button id="run-exp" type="button">Insérer les expériences</button>
         <button id="run-probe" type="button">Sonder l'API</button>

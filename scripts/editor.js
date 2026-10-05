@@ -97,20 +97,26 @@ window.Matheasy = window.Matheasy || {};
         var mode = $('mode').value;
         var finish = function (ok, note) {
             if (ok === false) { setStatus('ONLYOFFICE a refusé la formule.', true); return; }
-            var msg = M.replaceMode ? 'Formule insérée à la place de la sélection (vérifie le document). ' + (note || '') : 'Équation insérée dans le document.';
+            var msg = M.replaceMode ? 'Formule insérée à la place de la sélection. ' + (note || '') : 'Équation insérée dans le document.';
             setStatus(msg, false);
             if (M.replaceMode) { M.setReplaceMode(false); }
             if ($('autoclear').checked && mf.setValue) { mf.setValue(''); }
+            if ($('closeafter').checked) { window.Asc.plugin.executeCommand('close', ''); }
         };
         if (M.replaceMode) {
+            window.Asc.scope.matheasyDeleteFirst = ($('replmethod').value === 'delete');
             window.Asc.plugin.callCommand(function () {
                 var doc = Api.GetDocument();
                 var note = '';
-                try {
-                    var r = doc.GetRangeBySelect();
-                    if (r && typeof r.Delete === 'function') { r.Delete(); note = '(ancienne formule supprimée)'; }
-                    else { note = '(pas de Delete : remplacement laissé à ONLYOFFICE)'; }
-                } catch (e) { note = '(Delete ERREUR : ' + e.message + ')'; }
+                if (Asc.scope.matheasyDeleteFirst) {
+                    try {
+                        var r = doc.GetRangeBySelect();
+                        if (r && typeof r.Delete === 'function') { r.Delete(); note = '(méthode B : ancienne formule supprimée avant l\'insertion)'; }
+                        else { note = '(méthode B impossible : pas de Delete)'; }
+                    } catch (e) { note = '(Delete ERREUR : ' + e.message + ')'; }
+                } else {
+                    note = '(méthode A : insertion sur la sélection)';
+                }
                 var ok = doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
                 return JSON.stringify({ ok: ok, note: note });
             }, false, true, function (res) {
@@ -140,8 +146,10 @@ window.Matheasy = window.Matheasy || {};
         $('editmode').style.display = on ? 'flex' : 'none';
     };
 
-    function editSelection() {
+    // auto = true : appelé à l'ouverture de la fenêtre ; reste discret s'il n'y a pas de formule sélectionnée
+    function editSelection(auto) {
         var mf = $('mf');
+        var quiet = auto === true;
         window.Asc.plugin.callCommand(function () {
             var doc = Api.GetDocument();
             var r = doc.GetRangeBySelect();
@@ -152,17 +160,28 @@ window.Matheasy = window.Matheasy || {};
             } catch (e) { return JSON.stringify({ error: 'Lecture impossible : ' + e.message }); }
         }, false, true, function (res) {
             var o = {};
-            try { o = JSON.parse(res); } catch (e) { setStatus('Réponse illisible d\'ONLYOFFICE.', true); return; }
-            if (o.error) { setStatus(o.error, true); return; }
+            try { o = JSON.parse(res); } catch (e) { if (!quiet) { setStatus('Réponse illisible d\'ONLYOFFICE.', true); } return; }
+            if (o.error) { if (!quiet) { setStatus(o.error, true); } return; }
+            var info;
+            try { info = M.jsonInfo(o.json); } catch (e0) { if (!quiet) { setStatus('Structure de formule non reconnue.', true); } return; }
+            if (!info.hasMath) { if (!quiet) { setStatus('Aucune formule dans la sélection. Sélectionne toute la formule dans le document.', true); } return; }
+            if (info.hasText) {
+                setStatus('La sélection contient du texte en plus de la formule : sélectionne uniquement la formule pour la modifier.', true);
+                return;
+            }
             var out;
             try { out = M.jsonToLatex(o.json); } catch (e2) { setStatus('Structure de formule non reconnue : ' + e2.message, true); return; }
-            if (!out.latex) { setStatus('Aucune formule dans la sélection. Sélectionne toute la formule dans le document.', true); return; }
-            if (mf.setValue) { mf.setValue(out.latex); }
-            M.setReplaceMode(true);
-            var warn = out.warnings.length ? ' Attention : ' + out.warnings.join(' ; ') + '.' : '';
-            setStatus('Formule chargée. Modifie-la puis clique sur « Insérer » pour remplacer l\'ancienne.' + warn, out.warnings.length > 0);
+            if (!out.latex) { if (!quiet) { setStatus('Formule vide.', true); } return; }
+            var load = function () {
+                if (mf.setValue) { mf.setValue(out.latex); }
+                M.setReplaceMode(true);
+                var warn = out.warnings.length ? ' Attention : ' + out.warnings.join(' ; ') + '.' : '';
+                setStatus('Formule chargée. Modifie-la puis clique sur « Insérer » pour remplacer l\'ancienne.' + warn, out.warnings.length > 0);
+            };
+            if (window.customElements && customElements.whenDefined) { customElements.whenDefined('math-field').then(load); } else { load(); }
         });
     }
+    M.editSelection = editSelection;
 
     // Annote la sélection du document : color = [r,g,b] | 'auto' ; strike = true/false/undefined
     function annotate(color, strike) {
@@ -218,7 +237,7 @@ window.Matheasy = window.Matheasy || {};
         var mf = $('mf');
         buildPalettes(mf);
         $('btn-insert').addEventListener('click', insertIntoDocument);
-        $('btn-edit').addEventListener('click', editSelection);
+        $('btn-edit').addEventListener('click', function () { editSelection(false); });
         $('btn-cancel-edit').addEventListener('click', function () { M.setReplaceMode(false); setStatus('Modification annulée.', false); });
         $('btn-clear').addEventListener('click', function () { if (mf.setValue) { mf.setValue(''); } mf.focus(); });
         $('btn-red').addEventListener('click', function () { annotate([220, 0, 0]); });
@@ -227,6 +246,9 @@ window.Matheasy = window.Matheasy || {};
         $('btn-nocolor').addEventListener('click', function () { annotate('auto'); });
         $('btn-strike').addEventListener('click', function () { annotate(undefined, true); });
         $('btn-nostrike').addEventListener('click', function () { annotate(undefined, false); });
+
+        // À l'ouverture : si une formule est sélectionnée dans le document, on la charge pour modification
+        editSelection(true);
 
         // Le clavier virtuel de MathLive est remplacé par nos palettes
         try { if (window.mathVirtualKeyboard) { window.mathVirtualKeyboard.visible = false; } } catch (e) { /* ignoré */ }
