@@ -14,7 +14,7 @@ Phase 0 : **corpus de test**. `corpus/formules.json` liste des notations du seco
 
 ## Fabriquer le fichier .plugin
 
-- Windows (PowerShell) : `.\tools\build-plugin.ps1`
+- Windows : double-clic sur `tools\build-plugin.bat` (ou en PowerShell : `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build-plugin.ps1`)
 - Linux/macOS : `./tools/build-plugin.sh`
 
 Résultat : `dist/matheasy.plugin`, à ajouter dans ONLYOFFICE (onglet Plugins).
