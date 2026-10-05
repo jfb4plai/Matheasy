@@ -233,6 +233,18 @@
         window.Asc.plugin['event_' + name] = function (data) { logEvent(name, data); };
     });
 
+    // Crochets : le panneau suit le curseur ; un double-clic (s'il est signalé) ouvre la formule en modification
+    var baseTarget = window.Asc.plugin.event_onTargetPositionChanged;
+    window.Asc.plugin.event_onTargetPositionChanged = function (d) {
+        baseTarget(d);
+        if (window.Matheasy && window.Matheasy.onCursorMoved) { window.Matheasy.onCursorMoved(); }
+    };
+    var baseDbl = window.Asc.plugin.event_onDblClick;
+    window.Asc.plugin.event_onDblClick = function (d) {
+        baseDbl(d);
+        if (window.Matheasy && window.Matheasy.onDoubleClick) { window.Matheasy.onDoubleClick(); }
+    };
+
     // ---- Résumé structurel compact de toutes les équations du document ----
     var SKIP = { bFromDocument: 1, rPr: 1, ctrlPr: 1, footnotes: 1, endnotes: 1, reviewType: 1, pPr: 1, changes: 1, mathPr: 1, argPr: 1 };
     function compact(n) {

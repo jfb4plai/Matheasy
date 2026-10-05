@@ -174,10 +174,11 @@ window.Matheasy = window.Matheasy || {};
     // Lecture de la formule à modifier.
     //  auto = true  : appelé à l'ouverture de la fenêtre -> seulement si une sélection existe
     //  auto = false : bouton / menu -> la sélection, sinon le paragraphe sous le curseur
-    function editSelection(auto) {
+    // arg : true = ouverture (sélection seule, silencieux) ; false = bouton/menu (sélection ou curseur) ; 'dbl' = double-clic (curseur, silencieux)
+    function editSelection(arg) {
         var mf = $('mf');
-        var quiet = auto === true;
-        window.Asc.scope.matheasyAuto = quiet;
+        var quiet = (arg === true || arg === 'dbl');
+        window.Asc.scope.matheasyAuto = (arg === true);
         window.Asc.plugin.callCommand(function () {
             var doc = Api.GetDocument();
             var out = {};
@@ -224,6 +225,7 @@ window.Matheasy = window.Matheasy || {};
             try { out = M.jsonToLatex(chosen); } catch (e2) { setStatus('Structure de formule non reconnue : ' + e2.message, true); return; }
             if (!out.latex) { if (!quiet) { setStatus('Formule vide.', true); } return; }
             var load = function () {
+                if ($('detect')) { $('detect').style.display = 'none'; }
                 if (mf.setValue) { mf.setValue(out.latex); }
                 M.replaceTarget = target;
                 M.setReplaceMode(true);
@@ -285,8 +287,43 @@ window.Matheasy = window.Matheasy || {};
         if (palettes.length) { show(palettes[0]); }
     }
 
+    // ---- Mode panneau latéral : le document reste utilisable, le panneau suit le curseur ----
+    M.mode = (/[?&]mode=panel/.test(location.search)) ? 'panel' : 'window';
+    var cursorTimer = null;
+    M.checkCursor = function () {
+        if (M.mode !== 'panel' || M.replaceMode) { return; }
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var p = null;
+            try { p = doc.GetCurrentParagraph(); } catch (e) { /* ignoré */ }
+            if (!p) { return JSON.stringify({}); }
+            try { var j = p.ToJSON(false, false); return JSON.stringify({ json: (typeof j === 'string') ? j : JSON.stringify(j) }); }
+            catch (e2) { return JSON.stringify({}); }
+        }, false, true, function (res) {
+            var show = false;
+            try {
+                var o = JSON.parse(res);
+                if (o.json) { var info = M.jsonInfo(o.json); show = info.hasMath && !info.hasText; }
+            } catch (e) { /* ignoré */ }
+            if ($('detect')) { $('detect').style.display = (show && !M.replaceMode) ? 'flex' : 'none'; }
+        });
+    };
+    M.onCursorMoved = function () {
+        if (M.mode !== 'panel') { return; }
+        clearTimeout(cursorTimer);
+        cursorTimer = setTimeout(M.checkCursor, 350);
+    };
+    M.onDoubleClick = function () {
+        setTimeout(function () { editSelection('dbl'); }, 250);
+    };
+
     M.initEditor = function () {
         var mf = $('mf');
+        if (M.mode === 'panel') {
+            document.body.classList.add('panel');
+            if ($('closeafter')) { $('closeafter').checked = false; $('closeafter').parentNode.style.display = 'none'; }
+        }
+        if ($('btn-detect-edit')) { $('btn-detect-edit').addEventListener('click', function () { editSelection(false); }); }
         buildPalettes(mf);
         $('btn-insert').addEventListener('click', insertIntoDocument);
         $('btn-edit').addEventListener('click', function () { editSelection(false); });

@@ -31,3 +31,15 @@ button { font: inherit; cursor: pointer; }
 
 /* On masque les boutons internes de MathLive (clavier, menu) : les palettes les remplacent */
 math-field::part(virtual-keyboard-toggle), math-field::part(menu-toggle) { display: none; }
+
+.detect { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 8px; padding: 6px 10px; background: #e6f3ff; border: 1px solid #7fb2e5; border-radius: 4px; }
+.detect button { padding: 3px 10px; border: 1px solid #4473ca; border-radius: 4px; background: #4473ca; color: #fff; }
+/* Panneau latéral : colonne étroite */
+body.panel { padding: 8px; font-size: 12px; }
+body.panel h2 { font-size: 15px; }
+body.panel .tab { padding: 4px 6px; font-size: 12px; }
+body.panel .key { min-width: 34px; height: 30px; padding: 0 5px; font-size: 14px; }
+body.panel .field { font-size: 22px; min-height: 70px; padding: 6px; }
+body.panel .row { gap: 4px; }
+body.panel .row button, body.panel .primary { padding: 5px 8px; }
+body.panel .opt { display: block; }

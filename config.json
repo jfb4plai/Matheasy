@@ -4,14 +4,14 @@
         "fr": "Matheasy"
     },
     "guid": "asc.{bf6924ef-ae73-473f-8988-b310d6b26db1}",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "baseUrl": "",
     "minVersion": "8.2.0",
     "variations": [
         {
-            "description": "Notations mathématiques pour ONLYOFFICE",
+            "description": "Matheasy (fenêtre)",
             "descriptionLocale": {
-                "fr": "Notations mathématiques pour ONLYOFFICE — PLAI"
+                "fr": "Matheasy (fenêtre)"
             },
             "url": "index.html",
             "icons": [],
@@ -28,6 +28,33 @@
                 860
             ],
             "initOnSelectionChanged": false,
+            "events": [
+                "onClick",
+                "onDblClick",
+                "onTargetPositionChanged",
+                "onDocumentContentReady",
+                "onEnableMouseEvent",
+                "onContextMenuShow",
+                "onContextMenuClick"
+            ]
+        },
+        {
+            "description": "Matheasy (panneau latéral)",
+            "descriptionLocale": {
+                "fr": "Matheasy (panneau latéral)"
+            },
+            "url": "index.html?mode=panel",
+            "icons": [],
+            "type": "panelRight",
+            "isVisual": true,
+            "isModal": false,
+            "isInsideMode": true,
+            "EditorsSupport": [
+                "word"
+            ],
+            "initDataType": "none",
+            "isUpdateOleOnResize": false,
+            "buttons": [],
             "events": [
                 "onClick",
                 "onDblClick",
