@@ -23,6 +23,7 @@
         document.getElementById('run-roundtrip').addEventListener('click', roundTripJson);
         document.getElementById('run-summary').addEventListener('click', summarizeEquations);
         document.getElementById('run-dstyle').addEventListener('click', displayStyleTest);
+        document.getElementById('run-holes').addEventListener('click', holesTest);
         document.getElementById('run-leftjson').addEventListener('click', leftAlignTest);
         document.getElementById('clear-events').addEventListener('click', function () { document.getElementById('events').value = ''; });
     };
@@ -264,6 +265,36 @@
             parts.push(k + ':' + compact(n[k]));
         }
         return (n.type || 'obj') + '{' + parts.join(' ') + '}';
+    }
+
+    // Expérience : quelles écritures donnent une VRAIE case d'équation (qui disparaît quand on tape dessus) ?
+    function holesTest() {
+        document.getElementById('log').value = '';
+        var ns = 'xmlns="http://www.w3.org/1998/Math/MathML"';
+        window.Asc.scope.holes = [
+            { label: 'A) □ caractère (LaTeX \\square)', text: '2x+\\square=12', format: 'latex' },
+            { label: 'B) fraction à numérateur vide (LaTeX)', text: '\\frac{}{3}=12', format: 'latex' },
+            { label: 'C) accolades vides (LaTeX)', text: '2x+{}=12', format: 'latex' },
+            { label: 'D) racine vide (LaTeX)', text: '2x+\\sqrt{}=12', format: 'latex' },
+            { label: 'E) caractère ⬚ (Unicode)', text: '2x+⬚=12', format: 'unicode' },
+            { label: 'F) groupe vide (MathML)', text: '<math ' + ns + '><mrow><mn>2</mn><mi>x</mi><mo>+</mo><mrow></mrow><mo>=</mo><mn>12</mn></mrow></math>', format: 'mathml' }
+        ];
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var out = [];
+            var H = Asc.scope.holes;
+            for (var i = 0; i < H.length; i++) {
+                try {
+                    doc.EnterText(H[i].label + '   ');
+                    var ok = doc.AddMathEquation(H[i].text, H[i].format);
+                    out.push(H[i].label + ' -> ' + ok);
+                    if (i < H.length - 1) { doc.InsertParagraphBreak(); }
+                } catch (e) { out.push(H[i].label + ' ERREUR : ' + e.message); }
+            }
+            return out;
+        }, false, true, function (res) {
+            log((res || ['(pas de retour)']).join('\n') + '\nDans le document : clique dans chaque équation sur le « trou » et tape un chiffre. Lequel disparaît quand tu tapes (comme une case) ?');
+        });
     }
 
     // Expérience : fraction en pleine taille dans une ligne (style d'affichage) ?
