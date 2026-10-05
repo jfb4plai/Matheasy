@@ -210,20 +210,24 @@
         var box = document.getElementById('events');
         if (box) { box.value += line + '\n'; box.scrollTop = box.scrollHeight; }
     }
-    // Menu contextuel (clic droit) : entrée « Modifier avec Matheasy » (expérience, API non vérifiée)
+    // Menu contextuel (clic droit) : « Modifier avec Matheasy » (format de la documentation ONLYOFFICE)
     window.Asc.plugin.event_onContextMenuShow = function (options) {
         logEvent('onContextMenuShow', options);
         try {
             window.Asc.plugin.executeMethod('AddContextMenuItem', [{
                 guid: window.Asc.plugin.guid,
-                items: [{ id: 'matheasy-edit', text: 'Modifier avec Matheasy' }]
+                items: [{ id: 'matheasy-edit', text: { en: 'Edit with Matheasy', fr: 'Modifier avec Matheasy' }, items: [] }]
             }]);
         } catch (e) { logEvent('AddContextMenuItem ERREUR', e.message); }
     };
-    window.Asc.plugin.event_onContextMenuClick = function (id) {
-        logEvent('onContextMenuClick', id);
-        if (id === 'matheasy-edit' && window.Matheasy && window.Matheasy.editSelection) { window.Matheasy.editSelection(false); }
-    };
+    try {
+        if (typeof window.Asc.plugin.attachContextMenuClickEvent === 'function') {
+            window.Asc.plugin.attachContextMenuClickEvent('matheasy-edit', function () {
+                logEvent('clic sur Modifier avec Matheasy');
+                if (window.Matheasy && window.Matheasy.editSelection) { window.Matheasy.editSelection(false); }
+            });
+        } else { logEvent('attachContextMenuClickEvent absent'); }
+    } catch (e2) { logEvent('attachContextMenuClickEvent ERREUR', e2.message); }
 
     ['onClick', 'onDblClick', 'onTargetPositionChanged', 'onDocumentContentReady', 'onEnableMouseEvent'].forEach(function (name) {
         window.Asc.plugin['event_' + name] = function (data) { logEvent(name, data); };

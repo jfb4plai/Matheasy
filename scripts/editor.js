@@ -103,6 +103,29 @@ window.Matheasy = window.Matheasy || {};
             if ($('autoclear').checked && mf.setValue) { mf.setValue(''); }
             if ($('closeafter').checked) { window.Asc.plugin.executeCommand('close', ''); }
         };
+        if (M.replaceMode && M.replaceTarget && M.replaceTarget.kind === 'paragraph') {
+            window.Asc.scope.matheasyTarget = M.replaceTarget;
+            window.Asc.plugin.callCommand(function () {
+                var doc = Api.GetDocument();
+                var t = Asc.scope.matheasyTarget;
+                function sig(str) { return (String(str).match(/"value":\d+/g) || []).join(','); }
+                var p = null;
+                try { p = doc.GetElement(t.idx); } catch (e) { /* ignoré */ }
+                if (!p) { return JSON.stringify({ ok: false, error: 'Paragraphe introuvable : le document a changé.' }); }
+                var cur = p.ToJSON(false, false);
+                if (typeof cur !== 'string') { cur = JSON.stringify(cur); }
+                if (sig(cur) !== sig(t.json)) { return JSON.stringify({ ok: false, error: 'Le document a changé depuis le chargement de la formule : recharge-la.' }); }
+                p.RemoveAllElements();
+                p.Select();
+                var ok = doc.AddMathEquation(Asc.scope.matheasyLatex, 'latex');
+                return JSON.stringify({ ok: ok, note: '(remplacement dans le paragraphe d\'origine)' });
+            }, false, true, function (res) {
+                var o = {}; try { o = JSON.parse(res); } catch (e) { /* ignoré */ }
+                if (o.error) { setStatus(o.error, true); return; }
+                finish(o.ok, o.note);
+            });
+            return;
+        }
         if (M.replaceMode) {
             window.Asc.scope.matheasyDeleteFirst = ($('replmethod').value === 'delete');
             window.Asc.plugin.callCommand(function () {
@@ -141,39 +164,68 @@ window.Matheasy = window.Matheasy || {};
 
     // ---- Modification d'une formule existante ----
     M.replaceMode = false;
+    M.replaceTarget = null;
     M.setReplaceMode = function (on) {
         M.replaceMode = on;
+        if (!on) { M.replaceTarget = null; }
         $('editmode').style.display = on ? 'flex' : 'none';
     };
 
-    // auto = true : appelé à l'ouverture de la fenêtre ; reste discret s'il n'y a pas de formule sélectionnée
+    // Lecture de la formule à modifier.
+    //  auto = true  : appelé à l'ouverture de la fenêtre -> seulement si une sélection existe
+    //  auto = false : bouton / menu -> la sélection, sinon le paragraphe sous le curseur
     function editSelection(auto) {
         var mf = $('mf');
         var quiet = auto === true;
+        window.Asc.scope.matheasyAuto = quiet;
         window.Asc.plugin.callCommand(function () {
             var doc = Api.GetDocument();
-            var r = doc.GetRangeBySelect();
-            if (!r) { return JSON.stringify({ error: 'Aucune sélection dans le document.' }); }
-            try {
-                var j = r.ToJSON(false);
-                return JSON.stringify({ json: (typeof j === 'string') ? j : JSON.stringify(j) });
-            } catch (e) { return JSON.stringify({ error: 'Lecture impossible : ' + e.message }); }
+            var out = {};
+            var r = null;
+            try { r = doc.GetRangeBySelect(); } catch (e0) { /* ignoré */ }
+            var para = null;
+            try { if (r && typeof r.GetParagraph === 'function') { para = r.GetParagraph(0); } } catch (e1) { /* ignoré */ }
+            if (!para && !Asc.scope.matheasyAuto) { try { para = doc.GetCurrentParagraph(); } catch (e2) { /* ignoré */ } }
+            if (r) {
+                try { var j = r.ToJSON(false); out.rangeJson = (typeof j === 'string') ? j : JSON.stringify(j); } catch (e3) { out.rangeError = e3.message; }
+            }
+            if (para) {
+                try { var pj = para.ToJSON(false, false); out.paraJson = (typeof pj === 'string') ? pj : JSON.stringify(pj); } catch (e4) { out.paraError = e4.message; }
+                try { out.idx = para.GetPosInParent(); } catch (e5) { /* ignoré */ }
+            }
+            out.hasSelection = !!r;
+            return JSON.stringify(out);
         }, false, true, function (res) {
             var o = {};
             try { o = JSON.parse(res); } catch (e) { if (!quiet) { setStatus('Réponse illisible d\'ONLYOFFICE.', true); } return; }
-            if (o.error) { if (!quiet) { setStatus(o.error, true); } return; }
-            var info;
-            try { info = M.jsonInfo(o.json); } catch (e0) { if (!quiet) { setStatus('Structure de formule non reconnue.', true); } return; }
-            if (!info.hasMath) { if (!quiet) { setStatus('Aucune formule dans la sélection. Sélectionne toute la formule dans le document.', true); } return; }
-            if (info.hasText) {
-                setStatus('La sélection contient du texte en plus de la formule : sélectionne uniquement la formule pour la modifier.', true);
-                return;
+            if (!o.rangeJson && !o.paraJson) { if (!quiet) { setStatus('Aucune formule : sélectionne-la dans le document, ou place le curseur dans son paragraphe.', true); } return; }
+
+            // 1) Paragraphe entier = une formule seule : lecture fiable (racines complètes) + remplacement exact
+            var chosen = null, target = null, info;
+            if (o.paraJson) {
+                try { info = M.jsonInfo(o.paraJson); } catch (e0) { info = null; }
+                if (info && info.hasMath && !info.hasText) {
+                    chosen = o.paraJson;
+                    if (o.idx !== undefined && o.idx !== null) { target = { kind: 'paragraph', idx: o.idx, json: o.paraJson }; }
+                }
             }
+            // 2) Sinon : la sélection seule (formule dans du texte), remplacement par insertion sur la sélection
+            if (!chosen && o.rangeJson) {
+                try { info = M.jsonInfo(o.rangeJson); } catch (e1) { info = null; }
+                if (info && info.hasMath && !info.hasText) { chosen = o.rangeJson; target = { kind: 'selection' }; }
+                else if (info && info.hasMath && info.hasText) {
+                    setStatus('La sélection contient du texte en plus de la formule : sélectionne uniquement la formule pour la modifier.', true);
+                    return;
+                }
+            }
+            if (!chosen) { if (!quiet) { setStatus('Aucune formule dans la sélection ou sous le curseur.', true); } return; }
+
             var out;
-            try { out = M.jsonToLatex(o.json); } catch (e2) { setStatus('Structure de formule non reconnue : ' + e2.message, true); return; }
+            try { out = M.jsonToLatex(chosen); } catch (e2) { setStatus('Structure de formule non reconnue : ' + e2.message, true); return; }
             if (!out.latex) { if (!quiet) { setStatus('Formule vide.', true); } return; }
             var load = function () {
                 if (mf.setValue) { mf.setValue(out.latex); }
+                M.replaceTarget = target;
                 M.setReplaceMode(true);
                 var warn = out.warnings.length ? ' Attention : ' + out.warnings.join(' ; ') + '.' : '';
                 setStatus('Formule chargée. Modifie-la puis clique sur « Insérer » pour remplacer l\'ancienne.' + warn, out.warnings.length > 0);
