@@ -110,6 +110,9 @@ window.Matheasy = window.Matheasy || {};
         var mf = $('mf');
         try {
             mf.focus();
+            // Sortir des fractions, exposants… puis aller en fin de la ligne courante (sans effet si on y est déjà)
+            for (var up = 0; up < 5; up++) { mf.executeCommand('moveAfterParent'); }
+            mf.executeCommand('moveToGroupEnd');
             mf.insert('\\quad', { format: 'latex' });
             mf.executeCommand(['switchMode', 'text']);
         } catch (e) { /* ignoré */ }
@@ -128,6 +131,7 @@ window.Matheasy = window.Matheasy || {};
         window.Asc.scope.matheasyLines = prepared;
         window.Asc.scope.matheasyReplace = replaceTarget || null;
         var notesCount = prepared.filter(function (l) { return l.note; }).length;
+        window.Asc.scope.matheasyNoteCol = ($('notegap').value === 'col');
         window.Asc.scope.matheasyNoteGap = parseInt($('notegap').value, 10) || 16;
         window.Asc.scope.matheasyNoteItalic = $('noteitalic').checked;
         window.Asc.plugin.callCommand(function () {
@@ -158,6 +162,26 @@ window.Matheasy = window.Matheasy || {};
                     if (canText) { doc.EnterText('​'); }
                     var ok = doc.AddMathEquation(L[i].latex, 'latex');
                     if (ok === false) { res.fail++; } else { res.ok++; }
+                    if (L[i].note && Asc.scope.matheasyNoteCol) {
+                        // Commentaires alignés en colonne : taquet de tabulation sur le paragraphe + tabulation + texte
+                        var okCol = false;
+                        try {
+                            var pc2 = doc.GetCurrentParagraph();
+                            if (pc2 && typeof pc2.SetTabs === 'function' && typeof pc2.AddTabStop === 'function' && typeof pc2.AddElement === 'function') {
+                                pc2.SetTabs([5669], ['left']);
+                                pc2.AddTabStop();
+                                var rn = Api.CreateRun();
+                                if (Asc.scope.matheasyNoteItalic) { rn.SetItalic(true); }
+                                rn.AddText(L[i].note);
+                                pc2.AddElement(rn);
+                                if (typeof pc2.MoveCursorToEnd === 'function') { pc2.MoveCursorToEnd(); }
+                                okCol = true;
+                                res.col = (res.col || 0) + 1;
+                            }
+                        } catch (eCol) { res.errors.push('colonne : ' + eCol.message); }
+                        if (!okCol) { res.errors.push('colonne impossible : commentaire placé avec un écart fixe'); }
+                        else { if (i < L.length - 1 && canBreak) { doc.InsertParagraphBreak(); } continue; }
+                    }
                     if (L[i].note) {
                         if (canText) {
                             // Sortir de l'équation (curseur d'un cran à droite) pour écrire le commentaire en texte ordinaire
@@ -462,6 +486,11 @@ window.Matheasy = window.Matheasy || {};
                 b.title = it.title || it.latex;
                 b.addEventListener('click', function () {
                     var field = (M.activeField && document.body.contains(M.activeField)) ? M.activeField : mf;
+                    if (it.op && M.arrayEdit && field.getValue && field.setValue) {
+                        var cur = field.getValue('latex');
+                        var nl = M.arrayEdit(cur, it.op);
+                        if (nl && nl !== cur) { field.setValue(nl); field.focus(); refreshNoteOpts(); return; }
+                    }
                     if (it.command) { try { field.focus(); field.executeCommand(it.command); } catch (eCmd) { /* ignoré */ } return; }
                     if (field.insert) { field.insert(it.latex, { focus: true, format: 'latex' }); }
                     else { setStatus('Éditeur MathLive non chargé.', true); }

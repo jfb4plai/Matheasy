@@ -24,7 +24,7 @@
     </script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.5.1 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.5.2 — prototype</span></h2>
 
     <div id="detect" class="detect" style="display:none">Formule détectée sous le curseur. <button id="btn-detect-edit" type="button">Modifier cette formule</button></div>
 
@@ -38,6 +38,7 @@
             <option value="8">petit</option>
             <option value="16" selected>moyen</option>
             <option value="28">grand</option>
+            <option value="col">alignés en colonne (essai)</option>
         </select></label>
         <label class="opt"><input type="checkbox" id="noteitalic" checked> Commentaire en italique</label>
     </div>
@@ -96,6 +97,7 @@
     <script src="scripts/palettes.js"></script>
     <script src="scripts/json2latex.js"></script>
     <script src="scripts/lines.js"></script>
+    <script src="scripts/matrix.js"></script>
     <script src="scripts/editor.js"></script>
     <script src="scripts/plugin.js"></script>
 </body>
