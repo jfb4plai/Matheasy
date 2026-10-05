@@ -1,22 +1,126 @@
 [
-  {"id":"AN01","theme":"analyse","label":"limite","latex":"\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1"},
-  {"id":"AN02","theme":"analyse","label":"intégrale définie","latex":"\\int_{a}^{b} f(x)\\,dx = F(b) - F(a)"},
-  {"id":"AN03","theme":"analyse","label":"dérivée","latex":"f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"},
-  {"id":"AN04","theme":"analyse","label":"somme","latex":"\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}"},
-  {"id":"AN05","theme":"analyse","label":"dérivée partielle","latex":"\\frac{\\partial f}{\\partial x}"},
-  {"id":"AL01","theme":"algèbre","label":"formule du second degré","latex":"x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}"},
-  {"id":"AL02","theme":"algèbre","label":"matrice 2x2","latex":"\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"},
-  {"id":"AL03","theme":"algèbre","label":"déterminant","latex":"\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix} = ad - bc"},
-  {"id":"AL04","theme":"algèbre","label":"système","latex":"\\begin{cases} x + y = 3 \\\\ x - y = 1 \\end{cases}"},
-  {"id":"AL05","theme":"algèbre","label":"racine n-ième","latex":"\\sqrt[n]{a^m} = a^{m/n}"},
-  {"id":"GE01","theme":"géométrie","label":"vecteur","latex":"\\overrightarrow{AB} \\cdot \\overrightarrow{AC} = \\|AB\\| \\|AC\\| \\cos\\theta"},
-  {"id":"GE02","theme":"géométrie","label":"trigonométrie","latex":"\\sin^2 x + \\cos^2 x = 1"},
-  {"id":"PR01","theme":"probabilités","label":"combinaison","latex":"\\binom{n}{k} = \\frac{n!}{k!(n-k)!}"},
-  {"id":"PR02","theme":"probabilités","label":"probabilité conditionnelle","latex":"P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)}"},
-  {"id":"EN01","theme":"ensembles","label":"ensemble et quantificateurs","latex":"\\forall x \\in \\mathbb{R},\\ \\exists y \\in \\mathbb{N} : y > x"},
-  {"id":"AN06","theme":"annotations","label":"accolade avec légende","latex":"\\underbrace{a + b + c}_{\\text{somme}}"},
-  {"id":"AN07","theme":"annotations","label":"terme barré","latex":"\\cancel{x} + 1 = \\cancel{x} + 2"},
-  {"id":"AN08","theme":"annotations","label":"couleur sur une partie","latex":"x^2 + \\color{red}{2x} + 1"},
-  {"id":"AN09","theme":"annotations","label":"résultat encadré","latex":"\\boxed{x = 3}"},
-  {"id":"AN10","theme":"annotations","label":"résolution alignée","latex":"\\begin{aligned} 2x + 1 &= 7 \\\\ 2x &= 6 \\\\ x &= 3 \\end{aligned}"}
+ {
+  "id": "AN01",
+  "theme": "analyse",
+  "label": "limite",
+  "latex": "\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1"
+ },
+ {
+  "id": "AN02",
+  "theme": "analyse",
+  "label": "intégrale définie",
+  "latex": "\\int_{a}^{b} f(x)\\ dx = F(b) - F(a)"
+ },
+ {
+  "id": "AN03",
+  "theme": "analyse",
+  "label": "dérivée",
+  "latex": "f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"
+ },
+ {
+  "id": "AN04",
+  "theme": "analyse",
+  "label": "somme",
+  "latex": "\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}"
+ },
+ {
+  "id": "AN05",
+  "theme": "analyse",
+  "label": "dérivée partielle",
+  "latex": "\\frac{\\partial f}{\\partial x}"
+ },
+ {
+  "id": "AL01",
+  "theme": "algèbre",
+  "label": "formule du second degré",
+  "latex": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}"
+ },
+ {
+  "id": "AL02",
+  "theme": "algèbre",
+  "label": "matrice 2x2",
+  "latex": "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"
+ },
+ {
+  "id": "AL03",
+  "theme": "algèbre",
+  "label": "déterminant",
+  "latex": "\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix} = ad - bc"
+ },
+ {
+  "id": "AL04",
+  "theme": "algèbre",
+  "label": "système",
+  "latex": "\\begin{cases} x + y = 3 \\\\ x - y = 1 \\end{cases}"
+ },
+ {
+  "id": "AL05",
+  "theme": "algèbre",
+  "label": "racine n-ième",
+  "latex": "\\sqrt[n]{a^m} = a^{m/n}"
+ },
+ {
+  "id": "GE01",
+  "theme": "géométrie",
+  "label": "vecteur",
+  "latex": "\\overrightarrow{AB} \\cdot \\overrightarrow{AC} = \\|AB\\| \\|AC\\| \\cos\\theta",
+  "mathml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><mover><mrow><mi>A</mi><mi>B</mi></mrow><mo>&#x2192;</mo></mover><mo>&#x22C5;</mo><mover><mrow><mi>A</mi><mi>C</mi></mrow><mo>&#x2192;</mo></mover></mrow></math>"
+ },
+ {
+  "id": "GE02",
+  "theme": "géométrie",
+  "label": "trigonométrie",
+  "latex": "\\sin^2 x + \\cos^2 x = 1"
+ },
+ {
+  "id": "PR01",
+  "theme": "probabilités",
+  "label": "combinaison",
+  "latex": "\\binom{n}{k} = \\frac{n!}{k!(n-k)!}"
+ },
+ {
+  "id": "PR02",
+  "theme": "probabilités",
+  "label": "probabilité conditionnelle",
+  "latex": "P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)}"
+ },
+ {
+  "id": "EN01",
+  "theme": "ensembles",
+  "label": "ensemble et quantificateurs",
+  "latex": "\\forall x \\in \\mathbb{R},\\ \\exists y \\in \\mathbb{N} : y > x"
+ },
+ {
+  "id": "AN06",
+  "theme": "annotations",
+  "label": "accolade avec légende",
+  "latex": "\\underbrace{a + b + c}_{\\text{somme}}"
+ },
+ {
+  "id": "AN07",
+  "theme": "annotations",
+  "label": "terme barré",
+  "latex": "\\cancel{x} + 1 = \\cancel{x} + 2",
+  "mathml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><menclose notation=\"updiagonalstrike\"><mi>x</mi></menclose><mo>+</mo><mn>1</mn><mo>=</mo><menclose notation=\"updiagonalstrike\"><mi>x</mi></menclose><mo>+</mo><mn>2</mn></mrow></math>"
+ },
+ {
+  "id": "AN08",
+  "theme": "annotations",
+  "label": "couleur sur une partie",
+  "latex": "x^2 + \\color{red}{2x} + 1",
+  "mathml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mstyle mathcolor=\"red\"><mrow><mn>2</mn><mi>x</mi></mrow></mstyle><mo>+</mo><mn>1</mn></mrow></math>"
+ },
+ {
+  "id": "AN09",
+  "theme": "annotations",
+  "label": "résultat encadré",
+  "latex": "\\boxed{x = 3}",
+  "mathml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><menclose notation=\"box\"><mrow><mi>x</mi><mo>=</mo><mn>3</mn></mrow></menclose></math>"
+ },
+ {
+  "id": "AN10",
+  "theme": "annotations",
+  "label": "résolution alignée",
+  "latex": "\\begin{aligned} 2x + 1 &= 7 \\\\ 2x &= 6 \\\\ x &= 3 \\end{aligned}"
+ }
 ]
