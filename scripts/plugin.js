@@ -144,7 +144,7 @@
         }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n\n')); });
     }
 
-    // Aller-retour : sélection -> JSON -> FromJSON -> ajouté en fin de document
+    // Aller-retour : sélection -> JSON -> FromJSON -> éléments poussés en fin de document
     function roundTripJson() {
         document.getElementById('log').value = '';
         window.Asc.plugin.callCommand(function () {
@@ -156,21 +156,32 @@
             var j;
             try { j = r.ToJSON(false); if (typeof j !== 'string') { j = JSON.stringify(j); } out.push('ToJSON ok (' + j.length + ' caractères)'); } catch (e) { out.push('ToJSON ERREUR : ' + e.message); return out; }
             var el = null;
-            try { el = Api.FromJSON(j); out.push('FromJSON ok, classe : ' + (el && el.GetClassType ? el.GetClassType() : typeof el)); } catch (e) { out.push('FromJSON ERREUR : ' + e.message); return out; }
+            try { el = Api.FromJSON(j); } catch (e) { out.push('FromJSON ERREUR : ' + e.message); return out; }
+            var cls = '?';
+            try { cls = el.GetClassType ? el.GetClassType() : '(pas de GetClassType)'; } catch (e) { cls = 'GetClassType ERREUR ' + e.message; }
+            var keys = [];
+            try { for (var k in el) { keys.push(k); } } catch (e) { keys.push('ERR ' + e.message); }
+            out.push('FromJSON ok. Classe : ' + cls + '\nMéthodes de l\'objet : ' + keys.sort().join(', '));
+
+            var label = Api.CreateParagraph();
+            label.AddText('[Aller-retour JSON v2] éléments reconstruits ci-dessous :');
+            doc.Push(label);
+
+            var pushed = 0;
             try {
-                var label = Api.CreateParagraph();
-                label.AddText('[Aller-retour JSON] copie reconstruite ci-dessous :');
-                doc.Push(label);
-                doc.Push(el);
-                out.push('doc.Push(element) ok : regarde la fin du document');
-            } catch (e1) {
-                out.push('doc.Push(element) ERREUR : ' + e1.message);
-                try {
-                    var first = el.GetElement(0);
-                    doc.Push(first);
-                    out.push('Repli doc.Push(GetElement(0)) ok : regarde la fin du document');
-                } catch (e2) { out.push('Repli ERREUR : ' + e2.message); }
-            }
+                if (el.GetElementsCount && el.GetElement) {
+                    var n = el.GetElementsCount();
+                    out.push('L\'objet contient ' + n + ' élément(s).');
+                    for (var i = 0; i < n; i++) {
+                        try { doc.Push(el.GetElement(i)); pushed++; } catch (e1) { out.push('Push élément ' + i + ' ERREUR : ' + e1.message); }
+                    }
+                } else {
+                    doc.Push(el); pushed++;
+                    out.push('Pas de GetElementsCount : objet poussé tel quel.');
+                }
+            } catch (e2) { out.push('Extraction ERREUR : ' + e2.message); }
+            out.push('Éléments poussés : ' + pushed + '. Regarde la fin du document.');
+            out.push('doc.InsertContent existe : ' + (typeof doc.InsertContent));
             return out;
         }, false, true, function (res) { log((res || ['(pas de retour)']).join('\n')); });
     }
