@@ -6,19 +6,48 @@
     <link rel="stylesheet" href="https://onlyoffice.github.io/sdkjs-plugins/v1/plugins.css">
     <link rel="stylesheet" href="styles/style.css">
     <script src="https://onlyoffice.github.io/sdkjs-plugins/v1/plugins.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mathlive"></script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.0.8 — phase 0</span></h2>
-    <p>Insère le corpus de test dans le document pour vérifier le rendu des équations natives.</p>
-    <button id="run-corpus">Insérer le corpus de test</button>
-    <button id="run-exp">Insérer les expériences</button>
-    <button id="run-probe">Sonder l'API</button>
-    <button id="run-fmt">Test : rouge + barré sur la sélection</button>
-    <button id="run-json">Test : lire la sélection (JSON)</button>
-    <button id="run-methods">Test : lister toutes les méthodes</button>
-    <button id="run-md">Test : convertir le document en Markdown</button>
-    <button id="run-roundtrip">Test : aller-retour JSON de la sélection</button>
-    <textarea id="log" readonly rows="18" style="width:100%;box-sizing:border-box" placeholder="Journal (Ctrl+A puis Ctrl+C pour copier)"></textarea>
+    <h2>Matheasy <span class="version">v0.1.0 — prototype</span></h2>
+
+    <div id="tabs" class="tabs"></div>
+    <div id="palette" class="palette"></div>
+
+    <math-field id="mf" class="field" placeholder="Écris ou compose ta formule ici"></math-field>
+
+    <div class="row">
+        <button id="btn-insert" class="primary" type="button">Insérer dans le document</button>
+        <button id="btn-clear" type="button">Effacer</button>
+    </div>
+
+    <fieldset class="anno">
+        <legend>Annoter la sélection dans le document</legend>
+        <button id="btn-red" type="button" class="swatch red" title="Rouge"></button>
+        <button id="btn-blue" type="button" class="swatch blue" title="Bleu"></button>
+        <button id="btn-green" type="button" class="swatch green" title="Vert"></button>
+        <button id="btn-nocolor" type="button" title="Couleur automatique">Sans couleur</button>
+        <button id="btn-strike" type="button" title="Barrer la sélection">Barrer</button>
+        <button id="btn-nostrike" type="button" title="Retirer le barré">Ne plus barrer</button>
+    </fieldset>
+
+    <div id="status" class="status"></div>
+
+    <details class="dev">
+        <summary>Outils de test (développement)</summary>
+        <button id="run-corpus" type="button">Insérer le corpus de test</button>
+        <button id="run-exp" type="button">Insérer les expériences</button>
+        <button id="run-probe" type="button">Sonder l'API</button>
+        <button id="run-fmt" type="button">Test : rouge + barré sur la sélection</button>
+        <button id="run-json" type="button">Test : lire la sélection (JSON)</button>
+        <button id="run-methods" type="button">Test : lister toutes les méthodes</button>
+        <button id="run-md" type="button">Test : convertir le document en Markdown</button>
+        <button id="run-roundtrip" type="button">Test : aller-retour JSON de la sélection</button>
+        <textarea id="log" readonly rows="12" placeholder="Journal (Ctrl+A puis Ctrl+C pour copier)"></textarea>
+    </details>
+
+    <script src="scripts/palettes.js"></script>
+    <script src="scripts/editor.js"></script>
     <script src="scripts/plugin.js"></script>
 </body>
 </html>

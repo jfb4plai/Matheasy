@@ -10,7 +10,10 @@ Pas d'objet OLE : les formules sont des **équations natives** du document (ins�
 
 ## État
 
-Phase 0 : **corpus de test**. `corpus/formules.json` liste des notations du secondaire supérieur ; le plugin les insère dans un document pour mesurer ce que l'équation native rend correctement. Rien n'est encore validé dans un ONLYOFFICE réel.
+- **Validé dans ONLYOFFICE Desktop** (corpus de test, v0.0.x) : équations natives via `AddMathEquation` (LaTeX), couleur et barré sur une partie d'équation via `ApiRange.SetColor` / `SetStrikeout`, accolade, matrices, systèmes, alignement, vecteur (`\vec`), encadré (MathML `menclose box`).
+- **Non pris en charge par le moteur** (testé) : `\cancel`, `\boxed` (LaTeX), `\color`, `\textcolor`, `\overrightarrow`.
+- **v0.1.0 (prototype, non testé)** : fenêtre d'édition avec champ [MathLive](https://github.com/arnog/mathlive) (MIT, chargé depuis jsDelivr), palettes par thème, insertion en équation native, boutons d'annotation (couleur, barré) sur la sélection. Les outils de test restent dans un volet « Outils de test ».
+- **Réédition d'une équation existante** : `ToJSON` / `FromJSON` fonctionnent pour une formule sans racine ; le contenu des racines est exporté vide (`"e":null`). Pas encore exploité.
 
 ## Fabriquer le fichier .plugin
 
@@ -21,9 +24,9 @@ Résultat : `dist/matheasy.plugin`, à ajouter dans ONLYOFFICE (onglet Plugins).
 
 ## Feuille de route (provisoire)
 
-1. Corpus + test d'insertion (en cours)
-2. Palettes par thème (analyse, algèbre, géométrie, probabilités)
-3. Zones à compléter, résolution pas à pas, annotations en couleur
+1. Corpus + test d'insertion (fait)
+2. Fenêtre d'édition + palettes par thème (prototype v0.1.0)
+3. Zones à compléter, résolution pas à pas, réédition
 4. Annotation PDF (v2, faisabilité à vérifier)
 
 ## Licences
