@@ -91,6 +91,7 @@ window.Matheasy = window.Matheasy || {};
         var many = $('steps').children.length > 0;
         $('note0').style.display = many ? 'block' : 'none';
         $('multihint').style.display = many ? 'block' : 'none';
+        $('noteopts').style.display = many ? 'block' : 'none';
     }
 
     function addRow() {
@@ -139,6 +140,8 @@ window.Matheasy = window.Matheasy || {};
             prepared.push({ latex: latex, note: (lines[i].note || '').trim() });
         }
         window.Asc.scope.matheasyLines = prepared;
+        window.Asc.scope.matheasyNoteGap = parseInt($('notegap').value, 10) || 16;
+        window.Asc.scope.matheasyNoteItalic = $('noteitalic').checked;
         window.Asc.plugin.callCommand(function () {
             var doc = Api.GetDocument();
             var L = Asc.scope.matheasyLines;
@@ -156,7 +159,15 @@ window.Matheasy = window.Matheasy || {};
                             if (typeof doc.MoveCursorRight === 'function') {
                                 try { doc.MoveCursorRight(1, false, false); res.moved = (res.moved || 0) + 1; } catch (eM) { res.errors.push('MoveCursorRight : ' + eM.message); }
                             } else { res.errors.push('MoveCursorRight absent : le commentaire peut rester dans la formule'); }
-                            doc.EnterText('     ' + L[i].note);
+                            var gap = '';
+                            for (var g = 0; g < Asc.scope.matheasyNoteGap; g++) { gap += '\u00A0'; }
+                            doc.EnterText(gap + L[i].note);
+                            if (Asc.scope.matheasyNoteItalic) {
+                                try {
+                                    var run = (typeof doc.GetCurrentRun === 'function') ? doc.GetCurrentRun() : null;
+                                    if (run && typeof run.SetItalic === 'function') { run.SetItalic(true); res.italic = (res.italic || 0) + 1; }
+                                } catch (eI) { res.errors.push('italique : ' + eI.message); }
+                            }
                         } else { res.noteSkipped = true; }
                     }
                     if (i < L.length - 1) {
@@ -169,6 +180,7 @@ window.Matheasy = window.Matheasy || {};
             var r = {}; try { r = JSON.parse(out); } catch (e) { /* ignoré */ }
             var msg = (r.ok || 0) + ' ligne(s) insérée(s)' + (r.fail ? ', ' + r.fail + ' échec(s)' : '') + '.';
             if (r.noteSkipped) { msg += ' Commentaires non insérés (EnterText absent).'; }
+            if (r.moved !== undefined || r.italic !== undefined) { msg += ' [sortie de formule : ' + (r.moved || 0) + ', italique : ' + (r.italic || 0) + ']'; }
             if (r.errors && r.errors.length) { msg += ' ' + r.errors.join(' ; '); }
             setStatus(msg, !!(r.fail || (r.errors && r.errors.length)));
             if (!r.fail) {

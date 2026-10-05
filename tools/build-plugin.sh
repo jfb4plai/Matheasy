@@ -4,5 +4,5 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p dist
 rm -f dist/matheasy.plugin
-zip -qr dist/matheasy.plugin config.json index.html LICENSE LICENSE-CONTENT.md scripts styles corpus resources
+zip -qr dist/matheasy.plugin config.json index.html LICENSE LICENSE-CONTENT.md scripts styles corpus resources vendor
 echo "OK : dist/matheasy.plugin"

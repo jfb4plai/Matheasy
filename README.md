@@ -30,6 +30,11 @@ Résultat : `dist/matheasy.plugin`, à ajouter dans ONLYOFFICE (onglet Plugins).
 3. Zones à compléter, résolution pas à pas, réédition
 4. Annotation PDF (v2, faisabilité à vérifier)
 
+## Composants tiers
+
+- [MathLive](https://github.com/arnog/mathlive) 0.111.0, licence MIT (`vendor/mathlive/LICENSE.txt`), embarqué pour fonctionner sans connexion internet. Les polices KaTeX qu'il contient sont sous licence SIL OFL / MIT.
+- Le plugin charge encore `plugins.js` depuis `onlyoffice.github.io` (API de plugin d'ONLYOFFICE) : à vérifier hors connexion.
+
 ## Licences
 
 - **Code** : [PolyForm Noncommercial 1.0.0](LICENSE). Usage non commercial uniquement.

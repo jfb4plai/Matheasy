@@ -6,10 +6,25 @@
     <link rel="stylesheet" href="https://onlyoffice.github.io/sdkjs-plugins/v1/plugins.css">
     <link rel="stylesheet" href="styles/style.css">
     <script src="https://onlyoffice.github.io/sdkjs-plugins/v1/plugins.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/mathlive"></script>
+    <!-- MathLive 0.111.0 (MIT) embarqué : fonctionne sans internet. Secours : jsDelivr si la copie locale ne se charge pas -->
+    <script src="vendor/mathlive/mathlive.min.js"></script>
+    <script>
+        try {
+            if (window.MathLive && window.MathLive.MathfieldElement) {
+                window.MathLive.MathfieldElement.fontsDirectory = 'vendor/mathlive/fonts';
+                window.MathLive.MathfieldElement.soundsDirectory = null;
+            }
+        } catch (e) { /* ignoré */ }
+        if (!window.customElements || !window.customElements.get('math-field')) {
+            var s = document.createElement('script');
+            s.type = 'module';
+            s.src = 'https://cdn.jsdelivr.net/npm/mathlive';
+            document.head.appendChild(s);
+        }
+    </script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.3.2 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.4.0 — prototype</span></h2>
 
     <div id="detect" class="detect" style="display:none">Formule détectée sous le curseur. <button id="btn-detect-edit" type="button">Modifier cette formule</button></div>
 
@@ -21,6 +36,14 @@
     <input id="note0" class="note note0" type="text" style="display:none" placeholder="Commentaire à droite de cette ligne (ex. × 2) — facultatif">
     <div id="steps" class="steps"></div>
     <div id="multihint" class="hint" style="display:none">Résolution : chaque ligne devient un paragraphe du document, avec son commentaire à droite.</div>
+    <div id="noteopts" class="hint" style="display:none">
+        <label class="opt">Écart du commentaire : <select id="notegap">
+            <option value="8">petit</option>
+            <option value="16" selected>moyen</option>
+            <option value="28">grand</option>
+        </select></label>
+        <label class="opt"><input type="checkbox" id="noteitalic" checked> Commentaire en italique</label>
+    </div>
     <div class="row">
         <button id="btn-addline" type="button" title="Ajoute une ligne de résolution sous la précédente">+ Ligne de résolution</button>
     </div>

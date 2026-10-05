@@ -7,7 +7,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $root = Split-Path -Parent $PSScriptRoot
 $dist = Join-Path $root 'dist'
 $out  = Join-Path $dist 'matheasy.plugin'
-$items = @('config.json', 'index.html', 'LICENSE', 'LICENSE-CONTENT.md', 'scripts', 'styles', 'corpus', 'resources')
+$items = @('config.json', 'index.html', 'LICENSE', 'LICENSE-CONTENT.md', 'scripts', 'styles', 'corpus', 'resources', 'vendor')
 
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
 if (Test-Path $out) { Remove-Item $out }
