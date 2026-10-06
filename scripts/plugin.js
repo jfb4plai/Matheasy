@@ -13,6 +13,7 @@
 
     window.Asc.plugin.init = function () {
         if (window.Matheasy && window.Matheasy.initEditor) { window.Matheasy.initEditor(); }
+        if (window.Matheasy && window.Matheasy.initGeogebra) { window.Matheasy.initGeogebra(); }
         document.getElementById('run-corpus').addEventListener('click', function () { run('corpus/formules.json', false); });
         document.getElementById('run-exp').addEventListener('click', function () { run('corpus/experiences.json', true); });
         document.getElementById('run-probe').addEventListener('click', probeApi);

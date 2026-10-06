@@ -24,7 +24,7 @@
     </script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.9.0 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.9.1 — prototype</span></h2>
 
     <div id="detect" class="detect" style="display:none">Formule détectée sous le curseur. <button id="btn-detect-edit" type="button">Modifier cette formule</button></div>
 
@@ -65,6 +65,18 @@
 
     <div id="editmode" class="editmode" style="display:none">Mode modification : « Insérer » remplace la formule sélectionnée ; « Insérer à la suite » la garde et ajoute en dessous. <button id="btn-after" type="button" title="Garde la formule d'origine et ajoute le contenu du champ en dessous">Insérer à la suite</button> <button id="btn-cancel-edit" type="button">Annuler</button></div>
 
+    <fieldset class="anno" id="ggb-set">
+        <legend>GeoGebra (expérience)</legend>
+        <div>Fonction de la 1<sup>re</sup> ligne du champ → GeoGebra.</div>
+        <input id="ggb-cmd" type="text" style="width:100%" placeholder="f(x)=…" spellcheck="false">
+        <button id="ggb-convert" type="button" title="Convertit la ligne en commande GeoGebra">Convertir</button>
+        <button id="ggb-open" type="button" title="Copie la commande et ouvre GeoGebra dans le navigateur">Copier + ouvrir GeoGebra</button>
+        <button id="ggb-embed" type="button" title="Charge la calculatrice GeoGebra dans ce panneau (internet requis)">Calculatrice ici</button>
+        <button id="ggb-image" type="button" title="Exporte le graphique en image et l'insère dans le document">Insérer l'image du graphique</button>
+        <div><a href="https://www.geogebra.org/graphing" target="_blank" rel="noopener">Ouvrir GeoGebra (lien manuel)</a></div>
+        <pre id="ggb-log" style="white-space:pre-wrap;margin:4px 0"></pre>
+        <div id="ggb-box"></div>
+    </fieldset>
     <fieldset class="anno">
         <legend>Tableau avec traits (signes, variations, Horner)</legend>
         <label>Modèle
@@ -123,6 +135,7 @@
     <script src="scripts/json2latex.js"></script>
     <script src="scripts/lines.js"></script>
     <script src="scripts/matrix.js"></script>
+    <script src="scripts/geogebra.js"></script>
     <script src="scripts/editor.js"></script>
     <script src="scripts/plugin.js"></script>
 </body>
