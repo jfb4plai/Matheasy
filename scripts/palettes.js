@@ -29,6 +29,7 @@ window.Matheasy.PALETTES = [
             { label: 'légende', latex: '\\underbrace{#@}_{#?}', title: 'Accolade avec légende dessous' },
             { label: 'sys', latex: '\\begin{cases}#? \\\\ #?\\end{cases}', title: 'Système d\'équations' },
             { label: 'mat', latex: '\\begin{pmatrix}#? & #? \\\\ #? & #?\\end{pmatrix}', title: 'Matrice 2×2' },
+            { label: 'tab', latex: '\\begin{matrix}#? & #? & #? \\\\ #? & #? & #? \\\\ #? & #? & #?\\end{matrix}', title: 'Tableau 3×3 sans parenthèses (tableau de signes, de variations, Horner) : agrandis-le avec +col / +lig' },
             { label: 'det', latex: '\\begin{vmatrix}#? & #? \\\\ #? & #?\\end{vmatrix}', title: 'Déterminant 2×2' },
             { label: 'ali', latex: '\\begin{aligned}#? &= #? \\\\ #? &= #?\\end{aligned}', title: 'Résolution alignée sur le =' },
             { label: '+col', op: 'addCol', command: 'addColumnAfter', title: 'Bloc (matrice, système) : ajouter une colonne à droite' },
