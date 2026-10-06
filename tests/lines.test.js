@@ -14,6 +14,7 @@ const cases = [
   ['accolades imbriquées', '\\frac{\\text{a}}{b}=1\\\\y=2', [{ latex: '\\frac{\\text{a}}{b}=1', note: '' }, { latex: 'y=2', note: '' }]],
   ['texte au milieu conservé', 'x=\\text{si } y>0\\\\z=1', [{ latex: 'x=\\text{si } y>0', note: '' }, { latex: 'z=1', note: '' }]],
   ['échappements du commentaire', 'a=1\\quad\\text{100\\% sûr}', [{ latex: 'a=1', note: '100% sûr' }]],
+  ['titre d\'exercice (texte seul)', '\\text{Exercice 1}\\\\x+1=2', [{ latex: '', note: 'Exercice 1' }, { latex: 'x+1=2', note: '' }]],
   ['vide', '', []],
 ];
 let ko = 0;

@@ -24,7 +24,7 @@
     </script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.7.0 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.8.0 — prototype</span></h2>
 
     <div id="detect" class="detect" style="display:none">Formule détectée sous le curseur. <button id="btn-detect-edit" type="button">Modifier cette formule</button></div>
 
@@ -46,6 +46,7 @@
         <button id="btn-insert" class="primary" type="button">Insérer dans le document</button>
         <button id="btn-clear" type="button">Effacer</button>
         <button id="btn-newline" type="button" title="Ajoute une ligne sous la ligne courante (touche Entrée)">+ Ligne</button>
+        <button id="btn-exercise" type="button" title="Ajoute un titre « Exercice N » (numérotation automatique) sur une ligne à part">+ Exercice</button>
         <button id="btn-comment" type="button" title="Ajoute un commentaire à droite de la ligne courante">+ Commentaire</button>
         <button id="btn-edit" type="button" title="Sélectionne la formule, ou place le curseur dans son paragraphe">Modifier la formule sélectionnée</button>
         <label class="opt">Insertion : <select id="mode">
@@ -94,6 +95,8 @@
         <button id="run-summary" type="button">Test : résumé structurel de toutes les équations</button>
         <button id="run-dstyle" type="button">Test : fraction en pleine taille (\displaystyle)</button>
         <button id="run-leftjson" type="button">Test : aligner à gauche une équation centrée (JSON)</button>
+        <button id="run-strike" type="button">Test : barré dans une équation (JSON)</button>
+        <button id="run-horner" type="button">Test : gabarit Horner (tableau à traits)</button>
         <button id="run-holes" type="button">Test : cases natives (trous qui disparaissent quand on tape)</button>
         <div class="evhead">Journal des tests (Ctrl+A puis Ctrl+C dans la zone pour tout copier)</div>
         <div class="evhead">LaTeX du champ de saisie (lecture seule) :</div>

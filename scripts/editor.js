@@ -76,6 +76,8 @@ window.Matheasy = window.Matheasy || {};
         out = out.replace(/\{\s*\\placeholder(\[[^\]]*\])?\{[^}]*\}\s*\}/g, '{}'); // case vide dans une structure -> case native ONLYOFFICE
         out = out.replace(/\\placeholder(\[[^\]]*\])?\{[^}]*\}/g, '□'); // zone vide -> □
         out = out.replace(/\\square(?![a-zA-Z])/g, '\u25A1'); // trou littéral -> □
+        out = out.replace(/\\nearrow(?![a-zA-Z])/g, '\u2197').replace(/\\searrow(?![a-zA-Z])/g, '\u2198')
+                 .replace(/\\frown(?![a-zA-Z])/g, '\u2322').replace(/\\smile(?![a-zA-Z])/g, '\u2323');
         out = out.replace(/\\overrightarrow\{/g, '\\vec{');
         out = out.replace(/\\differentialD/g, 'd');
         out = out.replace(/\\mleft/g, '\\left').replace(/\\mright/g, '\\right');
@@ -174,10 +176,25 @@ window.Matheasy = window.Matheasy || {};
         refreshNoteOpts();
     }
 
+    // Ajoute une ligne de titre « Exercice N » (texte seul dans le document) ; N = nombre de titres déjà présents + 1
+    function addExercise() {
+        var mf = $('mf');
+        try {
+            mf.focus();
+            var cur = (mf.getValue ? mf.getValue('latex') : '') || '';
+            var n = (cur.match(/\\text\{Exercice \d+\}/g) || []).length + 1;
+            if (cur.trim()) { newLine(); }
+            mf.insert('\\text{Exercice ' + n + '}', { format: 'latex' });
+            newLine();
+        } catch (e) { /* ignoré */ }
+        refreshNoteOpts();
+    }
+
     function insertSteps(lines, replaceTarget) {
         if (!lines.length) { setStatus('Rien à insérer : toutes les lignes sont vides.', true); return; }
         var prepared = [];
         for (var i = 0; i < lines.length; i++) {
+            if (!lines[i].latex) { prepared.push({ textOnly: true, note: (lines[i].note || '').trim() }); continue; }
             var built = M.buildEquation(lines[i].latex);
             var latex = built.latex;
             var bad = M.UNSUPPORTED.filter(function (c) { return latex.indexOf(c) !== -1; });
@@ -216,6 +233,12 @@ window.Matheasy = window.Matheasy || {};
             }
             for (var i = 0; i < L.length; i++) {
                 try {
+                    if (L[i].textOnly) {
+                        // Ligne de texte seul (titre d'exercice) : pas d'équation
+                        if (canText) { doc.EnterText(L[i].note); res.ok++; } else { res.fail++; }
+                        if (i < L.length - 1 && canBreak) { doc.InsertParagraphBreak(); }
+                        continue;
+                    }
                     if (canText) { doc.EnterText('​'); }
                     var ok = doc.AddMathEquation(L[i].latex, L[i].format || 'latex');
                     if (ok === false) { res.fail++; } else { res.ok++; }
@@ -668,6 +691,7 @@ window.Matheasy = window.Matheasy || {};
         $('btn-insert').addEventListener('click', insertIntoDocument);
         $('btn-newline').addEventListener('click', newLine);
         $('btn-comment').addEventListener('click', addComment);
+        $('btn-exercise').addEventListener('click', addExercise);
         mf.addEventListener('input', refreshNoteOpts);
         // Entrée = nouvelle ligne (dans une matrice : nouvelle ligne de la matrice) ; Maj+Suppr supprime la ligne (MathLive)
         mf.addEventListener('keydown', function (ev) {

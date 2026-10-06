@@ -76,7 +76,6 @@ window.Matheasy = window.Matheasy || {};
         var inner = unwrapDisplaylines(latex || '');
         return splitTopLevel(inner)
             .map(function (p) { return splitComment(p); })
-            .filter(function (l) { return l.latex !== '' || l.note !== ''; })
-            .filter(function (l) { return l.latex !== ''; });
+            .filter(function (l) { return l.latex !== '' || l.note !== ''; });
     };
 })(window.Matheasy);

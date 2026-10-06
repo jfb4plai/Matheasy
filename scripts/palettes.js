@@ -85,6 +85,24 @@ window.Matheasy.PALETTES = [
         ]
     },
     {
+        id: 'fonctions', title: 'Fonctions', items: [
+            { label: '↗', latex: '\\nearrow', title: 'Fonction croissante (flèche à 45°)' },
+            { label: '↘', latex: '\\searrow', title: 'Fonction décroissante (flèche à −45°)' },
+            { label: '+∞', latex: '+\\infty', title: 'Plus l\'infini' },
+            { label: '−∞', latex: '-\\infty', title: 'Moins l\'infini' },
+            { label: '0', latex: '0', title: 'Zéro' },
+            { label: '+', latex: '+', title: 'Signe plus' },
+            { label: '−', latex: '-', title: 'Signe moins' },
+            { label: '⌢', latex: '\\frown', title: 'Sommet convexe de la courbe (maximum)' },
+            { label: '⌣', latex: '\\smile', title: 'Sommet concave de la courbe (minimum)' },
+            { label: 'f(x)', latex: 'f\\left(x\\right)' },
+            { label: "f'(x)", latex: "f'\\left(x\\right)", title: 'Dérivée' },
+            { label: 'x', latex: 'x' },
+            { label: '| |', latex: '\\mid', title: 'Barre verticale' },
+            { label: 'lim', latex: '\\lim_{x\\to #?}', title: 'Limite' }
+        ]
+    },
+    {
         id: 'proba', title: 'Probabilités', items: [
             { label: 'P( )', latex: 'P\\left(#@\\right)', title: 'Probabilité' },
             { label: 'P(A|B)', latex: 'P\\left(#? \\mid #?\\right)', title: 'Probabilité conditionnelle' },

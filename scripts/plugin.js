@@ -24,6 +24,8 @@
         document.getElementById('run-summary').addEventListener('click', summarizeEquations);
         document.getElementById('run-dstyle').addEventListener('click', displayStyleTest);
         document.getElementById('run-holes').addEventListener('click', holesTest);
+        document.getElementById('run-strike').addEventListener('click', strikeTest);
+        document.getElementById('run-horner').addEventListener('click', hornerTest);
         document.getElementById('run-leftjson').addEventListener('click', leftAlignTest);
         document.getElementById('clear-events').addEventListener('click', function () { document.getElementById('events').value = ''; });
     };
@@ -265,6 +267,65 @@
             parts.push(k + ':' + compact(n[k]));
         }
         return (n.type || 'obj') + '{' + parts.join(' ') + '}';
+    }
+
+    // Expérience : barrer une valeur DANS une équation (borderBox avec trait diagonal), via le JSON du paragraphe
+    function strikeTest() {
+        document.getElementById('log').value = '';
+        var ns = 'xmlns="http://www.w3.org/1998/Math/MathML"';
+        window.Asc.scope.strikeMl = '<math ' + ns + '><mfrac><mn>6</mn><menclose notation="box"><mn>3</mn></menclose></mfrac><mo>=</mo><mn>2</mn></math>';
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            doc.EnterText('​');
+            doc.AddMathEquation(Asc.scope.strikeMl, 'mathml');
+            var p = doc.GetCurrentParagraph();
+            var j = p.ToJSON(false, false);
+            var obj = JSON.parse(typeof j === 'string' ? j : JSON.stringify(j));
+            var found = [];
+            (function walk(x) {
+                if (!x || typeof x !== 'object') { return; }
+                if (Array.isArray(x)) { x.forEach(walk); return; }
+                if (x.type === 'borderBox') {
+                    found.push(JSON.stringify(x).slice(0, 600));
+                    var pr = x.borderBoxPr = x.borderBoxPr || {};
+                    pr.hideTop = pr.hideBot = pr.hideLeft = pr.hideRight = true;
+                    pr.strikeBLTR = true;
+                }
+                for (var k in x) { walk(x[k]); }
+            })(obj);
+            if (!found.length) { return JSON.stringify({ err: 'Aucun borderBox trouvé dans le JSON', json: JSON.stringify(obj).slice(0, 1500) }); }
+            var el = Api.FromJSON(JSON.stringify(obj));
+            p.ReplaceByElement(Array.isArray(el) ? el[0] : el);
+            return JSON.stringify({ ok: true, borderBox: found });
+        }, false, true, function (res) {
+            log('Résultat : ' + res + '\nRegarde le document : la fraction 6/3 a-t-elle un trait diagonal sur le 3 et plus de cadre ?');
+        });
+    }
+
+    // Expérience : gabarit Horner (tableau avec traits verticaux/horizontaux)
+    function hornerTest() {
+        document.getElementById('log').value = '';
+        window.Asc.scope.horner = [
+            { label: 'A) array c|ccc', text: '\\begin{array}{c|ccc} & 2 & -3 & 1 \\\\ 2 & & 4 & 2 \\\\ \\hline & 2 & 1 & 3 \\end{array}', format: 'latex' },
+            { label: 'B) matrice vmatrix 3 colonnes', text: '\\begin{vmatrix} & 2 & -3 & 1 \\\\ 2 & & 4 & 2 \\\\ & 2 & 1 & 3 \\end{vmatrix}', format: 'latex' },
+            { label: 'C) pmatrix simple', text: '\\begin{matrix} & 2 & -3 & 1 \\\\ 2 & & 4 & 2 \\\\ & 2 & 1 & 3 \\end{matrix}', format: 'latex' }
+        ];
+        window.Asc.plugin.callCommand(function () {
+            var doc = Api.GetDocument();
+            var out = [];
+            var H = Asc.scope.horner;
+            for (var i = 0; i < H.length; i++) {
+                try {
+                    doc.EnterText(H[i].label + '   ');
+                    var ok = doc.AddMathEquation(H[i].text, H[i].format);
+                    out.push(H[i].label + ' -> ' + ok);
+                    if (i < H.length - 1) { doc.InsertParagraphBreak(); }
+                } catch (e) { out.push(H[i].label + ' ERREUR : ' + e.message); }
+            }
+            return out;
+        }, false, true, function (res) {
+            log((res || ['(pas de retour)']).join('\n') + '\nDis-moi laquelle donne un tableau avec traits (ou un tableau lisible).');
+        });
     }
 
     // Expérience : quelles écritures donnent une VRAIE case d'équation (qui disparaît quand on tape dessus) ?
