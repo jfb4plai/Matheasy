@@ -53,3 +53,4 @@ Auteur : Jean-François Beguin, Référent numérique, https://jfb4plai.com
 
 - [Installation (PDF)](docs/guide-installation.pdf) — [HTML](docs/guide-installation.html)
 - [Mode d'emploi (PDF)](docs/mode-emploi.pdf) — [HTML](docs/mode-emploi.html)
+- [Pas à pas pour débuter (PDF)](docs/mode-emploi-debutant.pdf) — [HTML](docs/mode-emploi-debutant.html)
