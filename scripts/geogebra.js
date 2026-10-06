@@ -86,13 +86,23 @@ window.Matheasy = window.Matheasy || {};
         var el = $('ggb-log'); if (!el) { return; }
         el.textContent = msg; el.style.color = bad ? '#b00020' : '';
     }
-    function currentCommand() {
+    // Fonctions des lignes du champ : [{ ggb: 'f(x)=…', expr: '…' }] (équations non tracées ignorées)
+    function fieldFunctions() {
         var mf = $('mf');
         var raw = (mf && mf.getValue ? mf.getValue('latex') : '') || '';
         var lines = M.splitLines ? M.splitLines(raw) : [{ latex: raw }];
-        var first = '';
-        for (var i = 0; i < lines.length; i++) { if (lines[i].latex) { first = lines[i].latex; break; } }
-        var cmd = M.latexToGgb(first);
+        var res = [], skipped = [];
+        for (var i = 0; i < lines.length && res.length < 2; i++) {
+            if (!lines[i].latex) { continue; }
+            var g = M.latexToGgb(lines[i].latex);
+            var m = /^[a-z]\(x\)=(.*)$/.exec(g);
+            if (m && m[1].indexOf('=') === -1) { res.push({ ggb: g, expr: m[1], raw: lines[i].latex }); } else { skipped.push(lines[i].latex); }
+        }
+        return { funcs: res, skipped: skipped, raw: raw };
+    }
+    function currentCommand() {
+        var r = fieldFunctions();
+        var cmd = r.funcs.length ? r.funcs.map(function (f, i) { return (i ? 'g' : 'f') + f.ggb.slice(1); }).join(' ; ') : (r.skipped.length ? M.latexToGgb(r.skipped[0]) : '');
         $('ggb-cmd').value = cmd;
         return cmd;
     }
@@ -123,40 +133,71 @@ window.Matheasy = window.Matheasy || {};
         document.head.appendChild(s);
     }
 
+    var drawTimer = null;
+    function draw() {
+        var info = $('plot-info'), cv = $('plot-canvas');
+        var r = fieldFunctions(); currentCommand();
+        if (!r.funcs.length) {
+            cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+            info.style.color = r.raw.trim() ? '#b00020' : '';
+            info.textContent = r.raw.trim() ? 'Pas de fonction de x à tracer dans la 1re ligne (équation de cercle, etc. : utilise GeoGebra).' : 'Écris une fonction dans le champ (ex. 2x^3-√(7x)) : le graphique apparaît ici.';
+            return false;
+        }
+        var funcs = [], colors = ['#0a64c8', '#e07000'], names = ['f', 'g'];
+        try {
+            r.funcs.forEach(function (f, i) { funcs.push({ fn: M.compileFunction(f.expr), color: colors[i], label: names[i] }); });
+        } catch (e) { info.style.color = '#b00020'; info.textContent = 'Fonction non reconnue : ' + e.message + ' (' + r.funcs.map(function (f) { return f.expr; }).join(' ; ') + ')'; return false; }
+        var xmin = parseFloat($('plot-xmin').value), xmax = parseFloat($('plot-xmax').value);
+        if (!(xmin < xmax)) { info.style.color = '#b00020'; info.textContent = 'Intervalle de x incorrect.'; return false; }
+        var res = M.drawPlot(cv, funcs, { xmin: xmin, xmax: xmax });
+        var f2 = function (a) { return a.length ? a.map(function (v) { return String(parseFloat(v.toFixed(3))); }).join(' ; ') : 'aucun sur cet intervalle'; };
+        var t = 'f : ' + r.funcs[0].ggb.replace(/^[a-z]\(x\)=/, 'f(x) = ') + '\nZéros de f : x ≈ ' + f2(res.zeros[0]);
+        if (funcs.length > 1) { t += '\ng(x) = ' + r.funcs[1].expr + '\nZéros de g : x ≈ ' + f2(res.zeros[1]) + '\nf(x) = g(x) : x ≈ ' + f2(res.inter); }
+        info.style.color = ''; info.textContent = t;
+        return true;
+    }
+
     function wire() {
         if (!$('ggb-open')) { return; }
-        $('ggb-convert').addEventListener('click', function () { var c = currentCommand(); say(c ? 'Commande : ' + c : 'Rien à convertir.', !c); });
+        $('plot-draw').addEventListener('click', draw);
+        var mf = $('mf');
+        if (mf) { mf.addEventListener('input', function () { clearTimeout(drawTimer); drawTimer = setTimeout(draw, 500); }); }
+        $('plot-xmin').addEventListener('change', draw);
+        $('plot-xmax').addEventListener('change', draw);
+        draw();
+        $('plot-insert').addEventListener('click', function () {
+            if (!draw()) { say('Rien à insérer : trace d\'abord une fonction.', true); return; }
+            var url;
+            try { url = $('plot-canvas').toDataURL('image/png'); } catch (e) { say('Export de l\'image impossible : ' + e.message, true); return; }
+            window.Asc.scope.ggbPng = url;
+            window.Asc.plugin.callCommand(function () {
+                var doc = Api.GetDocument();
+                try {
+                    var img = Api.CreateImage(Asc.scope.ggbPng, 105 * 36000, 71.6 * 36000);
+                    var p = doc.GetCurrentParagraph();
+                    p.AddDrawing(img);
+                    return 'ok';
+                } catch (e) { return 'ERREUR : ' + e.message; }
+            }, false, true, function (res) { say(res === 'ok' ? 'Graphique inséré dans le document.' : 'Insertion de l\'image : ' + res, res !== 'ok'); });
+        });
         $('ggb-open').addEventListener('click', function () {
             var cmd = $('ggb-cmd').value || currentCommand();
-            if (!cmd) { say('Rien à convertir : écris une fonction dans le champ.', true); return; }
-            copy(cmd).then(function (ok) {
-                say((ok ? 'Commande copiée : ' : 'Copie automatique impossible, copie la commande à la main : ') + cmd + '\nColle-la (Ctrl+V) dans la barre de saisie de GeoGebra. Si rien ne s\'ouvre, clique sur le lien ci-dessous.', !ok);
+            if (!cmd) { say('Rien à exporter : écris une fonction dans le champ.', true); return; }
+            var first = cmd.split(' ; ')[0];
+            $('ggb-cmd').value = first;
+            copy(first).then(function (ok) {
+                say((ok ? 'Commande copiée : ' : 'Copie automatique impossible, copie la commande à la main : ') + first + '\nDans GeoGebra : clique dans la barre de saisie, Ctrl+V, Entrée. Si rien ne s\'ouvre, utilise le lien manuel.', !ok);
             });
             try { window.open('https://www.geogebra.org/graphing', '_blank'); } catch (e) { /* le lien manuel sert de secours */ }
         });
         $('ggb-embed').addEventListener('click', function () {
             loadApplet(function (api) {
                 var cmd = $('ggb-cmd').value;
-                var okDef = api.evalCommand(cmd);
+                var okDef = api.evalCommand(cmd.split(' ; ')[0]);
                 var okRoots = false;
                 try { okRoots = api.evalCommand('Roots(f)'); } catch (e) { /* f peut ne pas exister */ }
-                say('Calculatrice chargée. Définition : ' + okDef + ', zéros : ' + okRoots + '. Objets : ' + (api.getAllObjectNames ? api.getAllObjectNames().join(', ') : '?'), !okDef);
+                say('Calculatrice chargée. Définition : ' + okDef + ', zéros : ' + okRoots, !okDef);
             });
-        });
-        $('ggb-image').addEventListener('click', function () {
-            if (!applet || !appletReady) { say('Charge d\'abord « Calculatrice ici ».', true); return; }
-            var b64;
-            try { b64 = applet.getPNGBase64(1, true, 72); } catch (e) { say('Export PNG impossible : ' + e.message, true); return; }
-            window.Asc.scope.ggbPng = 'data:image/png;base64,' + b64;
-            window.Asc.plugin.callCommand(function () {
-                var doc = Api.GetDocument();
-                try {
-                    var img = Api.CreateImage(Asc.scope.ggbPng, 105 * 36000, 80 * 36000);
-                    var p = doc.GetCurrentParagraph();
-                    p.AddDrawing(img);
-                    return 'ok';
-                } catch (e) { return 'ERREUR : ' + e.message; }
-            }, false, true, function (res) { say('Insertion de l\'image : ' + res, res !== 'ok'); });
         });
     }
     M.initGeogebra = wire;
