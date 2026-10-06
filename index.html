@@ -24,7 +24,7 @@
     </script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.8.1 — prototype</span></h2>
+    <h2>Matheasy <span class="version">v0.9.0 — prototype</span></h2>
 
     <div id="detect" class="detect" style="display:none">Formule détectée sous le curseur. <button id="btn-detect-edit" type="button">Modifier cette formule</button></div>
 
@@ -65,6 +65,19 @@
 
     <div id="editmode" class="editmode" style="display:none">Mode modification : « Insérer » remplace la formule sélectionnée ; « Insérer à la suite » la garde et ajoute en dessous. <button id="btn-after" type="button" title="Garde la formule d'origine et ajoute le contenu du champ en dessous">Insérer à la suite</button> <button id="btn-cancel-edit" type="button">Annuler</button></div>
 
+    <fieldset class="anno">
+        <legend>Tableau avec traits (signes, variations, Horner)</legend>
+        <label>Modèle
+            <select id="tbl-model">
+                <option value="signs">Tableau de signes (x / f(x))</option>
+                <option value="vars">Tableau de variations (x / f'(x) / f(x))</option>
+                <option value="horner">Horner (3 lignes)</option>
+                <option value="blank">Vide</option>
+            </select></label>
+        <label>Colonnes <input id="tbl-cols" type="number" min="2" max="12" value="6" style="width:3.5em"></label>
+        <label>Lignes (modèle vide) <input id="tbl-rows" type="number" min="1" max="12" value="3" style="width:3.5em"></label>
+        <button id="btn-table" type="button" title="Insère un vrai tableau du document, à la suite du paragraphe courant. Les cases se remplissent ensuite normalement (texte ou formule Matheasy).">Insérer le tableau</button>
+    </fieldset>
     <fieldset class="anno">
         <legend>Annoter la sélection dans le document</legend>
         <button id="btn-red" type="button" class="swatch red" title="Rouge"></button>

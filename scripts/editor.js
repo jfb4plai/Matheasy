@@ -190,6 +190,52 @@ window.Matheasy = window.Matheasy || {};
         refreshNoteOpts();
     }
 
+    // Tableau du document (vrai tableau, avec traits) : signes, variations, Horner. Les cases se remplissent ensuite à la main ou avec Matheasy.
+    function insertTable() {
+        var model = $('tbl-model').value;
+        var cols = Math.max(2, Math.min(12, parseInt($('tbl-cols').value, 10) || 6));
+        var rows = Math.max(1, Math.min(12, parseInt($('tbl-rows').value, 10) || 3));
+        var labels = [];
+        if (model === 'signs') { labels = ['x', 'f(x)']; }
+        else if (model === 'vars') { labels = ['x', 'f\u2019(x)', 'f(x)']; }
+        else if (model === 'horner') { labels = ['', '', '']; }
+        if (labels.length) { rows = labels.length; }
+        window.Asc.scope.matheasyTable = { cols: cols, rows: rows, labels: labels };
+        window.Asc.plugin.callCommand(function () {
+            var T = Asc.scope.matheasyTable;
+            var doc = Api.GetDocument();
+            var res = { ok: false, notes: [] };
+            if (typeof Api.CreateTable !== 'function' || typeof doc.AddElement !== 'function') { return JSON.stringify({ ok: false, error: 'API tableau absente de cette version.' }); }
+            var table = Api.CreateTable(T.cols, T.rows);
+            var types = ['SetTableBorderTop', 'SetTableBorderBottom', 'SetTableBorderLeft', 'SetTableBorderRight', 'SetTableBorderInsideH', 'SetTableBorderInsideV'];
+            types.forEach(function (m) {
+                try { if (typeof table[m] === 'function') { table[m]('single', 4, 0, 0, 0, 0); } else { res.notes.push(m + ' absent'); } } catch (e) { res.notes.push(m + ' : ' + e.message); }
+            });
+            try { if (typeof table.SetWidth === 'function') { table.SetWidth('percent', 100); } } catch (e1) { res.notes.push('largeur : ' + e1.message); }
+            for (var r = 0; r < T.rows; r++) {
+                var lab = T.labels[r];
+                if (!lab) { continue; }
+                try {
+                    var para = table.GetRow(r).GetCell(0).GetContent().GetElement(0);
+                    para.AddText(lab);
+                } catch (e2) { res.notes.push('étiquette ligne ' + (r + 1) + ' : ' + e2.message); }
+            }
+            try {
+                var cur = doc.GetCurrentParagraph();
+                var pos = cur ? cur.GetPosInParent() : -1;
+                if (pos < 0) { pos = doc.GetElementsCount() - 1; }
+                doc.AddElement(pos + 1, table);
+                if (pos + 2 >= doc.GetElementsCount()) { doc.AddElement(pos + 2, Api.CreateParagraph()); }
+                res.ok = true;
+            } catch (e3) { res.error = 'insertion : ' + e3.message; }
+            return JSON.stringify(res);
+        }, false, true, function (out) {
+            var r = {}; try { r = JSON.parse(out); } catch (e) { /* ignoré */ }
+            if (r.ok) { setStatus('Tableau inséré (' + cols + ' colonnes × ' + rows + ' lignes).' + (r.notes && r.notes.length ? ' ' + r.notes.join(' ; ') : ''), !!(r.notes && r.notes.length)); }
+            else { setStatus('Tableau non inséré : ' + (r.error || out), true); }
+        });
+    }
+
     function insertSteps(lines, replaceTarget) {
         if (!lines.length) { setStatus('Rien à insérer : toutes les lignes sont vides.', true); return; }
         var prepared = [];
@@ -703,6 +749,7 @@ window.Matheasy = window.Matheasy || {};
         }, true);
         refreshNoteOpts();
         $('btn-edit').addEventListener('click', function () { editSelection(false); });
+        $('btn-table').addEventListener('click', insertTable);
         $('btn-after').addEventListener('click', function () {
             M.afterMode = true;
             try { insertIntoDocument(); } finally { M.afterMode = false; }
