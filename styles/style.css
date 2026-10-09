@@ -1,10 +1,10 @@
 /* Charte PLAI : teal #0f6e56, orange #f97316, DM Sans (texte) + DM Serif Display (titres) ; repli système hors ligne */
 :root { --teal: #0f6e56; --teal-bg: #e1f5ee; --teal-border: #1d9e75; --orange: #f97316; --text: #1a1814; }
 html, body { height: 100%; margin: 0; overflow-y: auto !important; }
-body { font-family: "DM Sans", "Segoe UI", Arial, sans-serif; color: var(--text); background: #fff; padding: 10px 12px 40px; font-size: 13px; box-sizing: border-box; }
-h2 { margin: 0 0 8px; font-size: 18px; font-family: "DM Serif Display", Georgia, serif; font-weight: normal; color: var(--teal); }
-.version { font-size: 12px; font-weight: normal; color: #666; }
-button { font: inherit; cursor: pointer; }
+body { font-family: "DM Sans", "Segoe UI", Arial, sans-serif; color: var(--text); background: #fff; padding: 10px 12px 40px; font-size: 16px; line-height: 1.45; box-sizing: border-box; }
+h2 { margin: 0 0 8px; font-size: 22px; font-family: "DM Serif Display", Georgia, serif; font-weight: normal; color: var(--teal); }
+.version { font-size: 16px; font-weight: normal; color: #666; }
+button, input, select, textarea, summary { font: inherit; } button { cursor: pointer; }
 .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
 .tab { padding: 5px 10px; border: 1px solid #cbcbcb; border-radius: 4px 4px 0 0; background: #f3f3f3; }
 .tab.active { background: #fff; border-bottom-color: #fff; font-weight: 600; }
@@ -13,7 +13,7 @@ button { font: inherit; cursor: pointer; }
 .key:hover { background: var(--teal-bg); border-color: var(--teal); }
 .field { display: block; width: 100%; box-sizing: border-box; margin: 10px 0; padding: 10px; min-height: 90px; font-size: 28px; border: 1px solid var(--teal); border-radius: 4px; background: #fff; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
-.opt { font-size: 12px; color: #444; }
+.opt { font-size: 16px; color: #444; }
 .primary { padding: 7px 16px; background: var(--teal); color: #fff; border: 0; border-radius: 4px; font-weight: 600; }
 .row button:not(.primary) { padding: 7px 12px; border: 1px solid #cbcbcb; border-radius: 4px; background: #fff; }
 .anno { border: 1px solid #cbcbcb; border-radius: 4px; padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -37,10 +37,10 @@ math-field::part(virtual-keyboard-toggle), math-field::part(menu-toggle) { displ
 .detect { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 8px; padding: 6px 10px; background: var(--teal-bg); border: 1px solid var(--teal-border); border-radius: 4px; }
 .detect button { padding: 3px 10px; border: 1px solid var(--teal); border-radius: 4px; background: var(--teal); color: #fff; }
 /* Panneau latéral : colonne étroite */
-body.panel { padding: 8px; font-size: 12px; }
-body.panel h2 { font-size: 15px; }
-body.panel .tab { padding: 4px 6px; font-size: 12px; }
-body.panel .key { min-width: 34px; height: 30px; padding: 0 5px; font-size: 14px; }
+body.panel { padding: 8px; font-size: 16px; }
+body.panel h2 { font-size: 20px; }
+body.panel .tab { padding: 5px 8px; font-size: 16px; }
+body.panel .key { min-width: 38px; height: 36px; padding: 0 6px; font-size: 16px; }
 body.panel .field { font-size: 22px; min-height: 70px; padding: 6px; }
 body.panel .row { gap: 4px; }
 body.panel .row button, body.panel .primary { padding: 5px 8px; }
@@ -52,7 +52,7 @@ body.panel .opt { display: block; }
 .note { flex: 1 1 70%; box-sizing: border-box; padding: 5px 8px; border: 1px solid #cbcbcb; border-radius: 4px; font: inherit; }
 .note0 { display: block; width: 100%; margin: -6px 0 8px; }
 .delrow { padding: 4px 8px; border: 1px solid #cbcbcb; border-radius: 4px; background: #fff; }
-.hint { margin: 0 0 6px; font-size: 12px; color: #555; }
+.hint { margin: 0 0 6px; font-size: 16px; color: #555; }
 body.panel .field.step { font-size: 20px; min-height: 48px; }
 
 #latexview { display: block; width: 100%; box-sizing: border-box; font-size: 12px; margin-bottom: 6px; }
@@ -71,3 +71,8 @@ details.tool > .anno { border: 0; }
 details.tool > .hint, details.tool .anno > .hint { flex-basis: 100%; margin: 0 8px 6px; }
 .primary:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
 .editmode { border-color: var(--orange) !important; }
+
+/* Taille de texte : 16 px minimum partout dans l'interface (règle PLAI) ; seuls les outils de test, cachés, restent plus petits */
+.dev { font-size: 13px; }
+details.tool > summary { font-size: 16px; }
+#plot-info, #ggb-log { font: inherit; }

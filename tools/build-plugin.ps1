@@ -1,4 +1,4 @@
-# Fabrique dist\matheasy.plugin (archive ZIP avec config.json à la racine).
+﻿# Fabrique dist\matheasy.plugin (archive ZIP avec config.json à la racine).
 # Usage (PowerShell, depuis n'importe où) :  .\tools\build-plugin.ps1
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression
@@ -8,6 +8,14 @@ $root = Split-Path -Parent $PSScriptRoot
 $dist = Join-Path $root 'dist'
 $out  = Join-Path $dist 'matheasy.plugin'
 $items = @('config.json', 'index.html', 'LICENSE', 'LICENSE-CONTENT.md', 'scripts', 'styles', 'corpus', 'resources', 'vendor')
+
+# Tests avant fabrication : bloquants si Node.js est installé, sautés sinon (un collègue qui installe n'a pas besoin de Node.js)
+if (Get-Command node -ErrorAction SilentlyContinue) {
+    & node (Join-Path $root 'tests\run-all.js')
+    if ($LASTEXITCODE -ne 0) { throw "Tests en échec : le fichier .plugin n'a pas été fabriqué." }
+} else {
+    Write-Warning "Node.js absent : tests non lancés, fabrication quand même."
+}
 
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
 if (Test-Path $out) { Remove-Item $out }

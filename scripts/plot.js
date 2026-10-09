@@ -202,17 +202,17 @@ window.Matheasy = window.Matheasy || {};
         function py(y) { return H - (y - ymin) / (ymax - ymin) * H; }
         ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
         // grille + graduations
-        ctx.font = '10px sans-serif'; ctx.textBaseline = 'top';
+        ctx.font = '13px sans-serif'; ctx.textBaseline = 'top';
         var sx = niceStep((xmax - xmin) / 8), sy = niceStep((ymax - ymin) / 6), v;
         ctx.lineWidth = 1; ctx.strokeStyle = '#e3e3e3'; ctx.fillStyle = '#666';
         var x0 = Math.min(Math.max(0, xmin), xmax), y0 = Math.min(Math.max(0, ymin), ymax);
         for (v = Math.ceil(xmin / sx) * sx; v <= xmax + 1e-9; v += sx) {
             ctx.beginPath(); ctx.moveTo(px(v), 0); ctx.lineTo(px(v), H); ctx.stroke();
-            if (Math.abs(v) > 1e-9) { ctx.textAlign = 'center'; ctx.fillText(fmt(v), px(v), Math.min(py(y0) + 3, H - 12)); }
+            if (Math.abs(v) > 1e-9) { ctx.textAlign = 'center'; ctx.fillText(fmt(v), px(v), Math.min(py(y0) + 3, H - 16)); }
         }
         for (v = Math.ceil(ymin / sy) * sy; v <= ymax + 1e-9; v += sy) {
             ctx.beginPath(); ctx.moveTo(0, py(v)); ctx.lineTo(W, py(v)); ctx.stroke();
-            if (Math.abs(v) > 1e-9) { ctx.textAlign = 'left'; ctx.fillText(fmt(v), Math.min(px(x0) + 3, W - 28), py(v) + 2); }
+            if (Math.abs(v) > 1e-9) { ctx.textAlign = 'left'; ctx.fillText(fmt(v), Math.min(px(x0) + 3, W - 36), py(v) + 2); }
         }
         ctx.strokeStyle = '#222'; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(0, py(y0)); ctx.lineTo(W, py(y0)); ctx.stroke();
@@ -233,7 +233,7 @@ window.Matheasy = window.Matheasy || {};
         // points remarquables
         function dot(x, y, color, label) {
             ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px(x), py(y), 4, 0, 6.2832); ctx.fill();
-            ctx.fillStyle = '#000'; ctx.font = '11px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+            ctx.fillStyle = '#000'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
             ctx.fillText(label, px(x) + 5, py(y) - 3);
         }
         // opts.showValues === false : courbe seule, sans les points calculés (l'élève les cherche lui-même)

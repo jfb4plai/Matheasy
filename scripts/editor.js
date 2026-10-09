@@ -1,10 +1,11 @@
 /**
- * Matheasy — fenêtre d'édition (v0.1.0, prototype).
- *  - champ de saisie MathLive (<math-field>, licence MIT, chargé depuis jsDelivr)
+ * Matheasy — panneau d'édition (cœur de l'interface).
+ *  - champ de saisie MathLive (<math-field>, licence MIT, embarqué dans vendor/ ; jsDelivr en secours)
  *  - palettes par thème (scripts/palettes.js)
- *  - insertion dans le document comme équation native (AddMathEquation, format latex)
- *  - annotation de la sélection du document : couleur / barré (validés en v0.0.5)
- * Non testé dans un ONLYOFFICE réel à ce stade.
+ *  - insertion comme équation native (AddMathEquation, LaTeX ; MathML pour l'encadré), une ligne = un paragraphe
+ *  - commentaires à droite, titres « Exercice N », couleur des lignes insérées
+ *  - modification d'une formule ou d'une résolution existante (json2latex.js), remplacement avec retour arrière
+ *  - tableau à traits, annotation de la sélection (couleur, barré), outils repliables mémorisés
  */
 window.Matheasy = window.Matheasy || {};
 
@@ -638,6 +639,8 @@ window.Matheasy = window.Matheasy || {};
                 b.className = 'key';
                 b.textContent = it.label;
                 b.title = it.title || it.latex;
+                // Lecteur d'écran : « Fraction » plutôt que « a/b », « Racine carrée » plutôt que « √ »
+                b.setAttribute('aria-label', it.title || it.label);
                 b.addEventListener('click', function () {
                     var field = (M.activeField && document.body.contains(M.activeField)) ? M.activeField : mf;
                     if (it.action === 'box') {

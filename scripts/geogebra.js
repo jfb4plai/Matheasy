@@ -1,10 +1,10 @@
 /**
- * Matheasy — pont GeoGebra (EXPÉRIENCE v0.9.1).
+ * Matheasy — graphique de la fonction et pont GeoGebra.
  *  - M.latexToGgb(latex) : LaTeX d'une ligne -> commande GeoGebra (cas simples)
- *  - bouton « copier + ouvrir » : copie la commande, ouvre la calculatrice graphique dans le navigateur
- *  - bouton « calculatrice ici » : charge l'API GeoGebra (deployggb.js) dans le panneau et envoie la commande
- *  - bouton « insérer l'image » : exporte le graphique en PNG et tente de l'insérer dans le document
- * Tout cela demande internet et n'a pas encore été vérifié dans ONLYOFFICE.
+ *  - tracé dans le panneau (plot.js), zéros et intersections affichés seulement si la case est cochée
+ *  - « Insérer le graphique » : image PNG dans le document (hors ligne)
+ *  - « Copier + ouvrir GeoGebra » : copie la commande, ouvre la calculatrice dans le navigateur (internet)
+ *  - « calculatrice ici » (outils de test seulement) : charge deployggb.js depuis geogebra.org
  */
 window.Matheasy = window.Matheasy || {};
 

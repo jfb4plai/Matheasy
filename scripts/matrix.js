@@ -1,7 +1,7 @@
 /**
  * Matheasy — édition des blocs (matrices, systèmes, alignements) sur le LaTeX du champ.
- * MathLive insère une colonne à côté de la colonne courante ; ici « +col » ajoute à la fin (droite) et
- * « −col » retire la dernière, « +lig » ajoute en bas, « −lig » retire la dernière ligne.
+ * MathLive insère une colonne à côté de la colonne courante ; ici « bloc + colonne » ajoute à la fin (droite) et
+ * « bloc − colonne » retire la dernière, « bloc + ligne » ajoute en bas, « bloc − ligne » retire la dernière ligne.
  * Fonctionne quand le champ contient exactement un bloc \begin{...}...\end{...}.
  */
 window.Matheasy = window.Matheasy || {};

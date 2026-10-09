@@ -4,7 +4,7 @@ Required Notice: Copyright (c) 2025-2026 Jean-Francois Beguin, Referent numeriqu
 
 ## Perimetre
 
-Les **contenus pedagogiques** de ce depot (textes, fiches, consignes, exercices, guides, modes d'emploi, illustrations et supports crees par l'auteur, hors logo PLAI : voir ci-dessous) sont publies sous licence
+Les **contenus pedagogiques** de ce depot (textes, fiches, consignes, exercices, guides, modes d'emploi, illustrations et supports crees par l'auteur, hors logos PLAI et JFB4PLAI : voir ci-dessous) sont publies sous licence
 **Creative Commons Attribution - Pas d'Utilisation Commerciale - Partage dans les Memes Conditions 4.0 International (CC BY-NC-SA 4.0)**.
 
 Texte officiel : https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
@@ -15,7 +15,7 @@ En clair : vous pouvez copier, adapter et partager ces contenus **a des fins non
 
 - **Le code source** de l'application : il est regi par le fichier `LICENSE` (PolyForm Noncommercial 1.0.0).
 - **Les elements de tiers** (donnees, corpus, pictogrammes, polices, bibliotheques, extraits de sources externes) : ils restent soumis a leur propre licence.
-- **Le logo et l'identite visuelle PLAI** (nom "PLAI", logo, charte graphique) : tous droits reserves. Leur usage est autorise uniquement pour identifier l'origine du contenu, sans suggerer que PLAI approuve une adaptation ou en est partenaire.
+- **Les logos et identites visuelles PLAI et JFB4PLAI** (noms "PLAI" et "JFB4PLAI", logos, charte graphique) : tous droits reserves. Leur usage est autorise uniquement pour identifier l'origine du contenu, sans suggerer que PLAI approuve une adaptation ou en est partenaire.
 
 ---
 

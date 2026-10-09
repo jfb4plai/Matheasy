@@ -27,15 +27,15 @@ window.Matheasy.PALETTES = [
             { label: '√□', latex: '\\sqrt{#?}', title: 'Racine à compléter (case vide qui disparaît quand l\'élève tape)' },
             { label: 'encadré', action: 'box', title: 'Encadrer la sélection, ou toute la ligne courante si rien n\'est sélectionné' },
             { label: 'légende', latex: '\\underbrace{#@}_{#?}', title: 'Accolade avec légende dessous' },
-            { label: 'sys', latex: '\\begin{cases}#? \\\\ #?\\end{cases}', title: 'Système d\'équations' },
-            { label: 'mat', latex: '\\begin{pmatrix}#? & #? \\\\ #? & #?\\end{pmatrix}', title: 'Matrice 2×2' },
-            { label: 'tab', latex: '\\begin{matrix}#? & #? & #? \\\\ #? & #? & #? \\\\ #? & #? & #?\\end{matrix}', title: 'Tableau 3×3 sans parenthèses (tableau de signes, de variations, Horner) : agrandis-le avec +col / +lig' },
-            { label: 'det', latex: '\\begin{vmatrix}#? & #? \\\\ #? & #?\\end{vmatrix}', title: 'Déterminant 2×2' },
-            { label: 'ali', latex: '\\begin{aligned}#? &= #? \\\\ #? &= #?\\end{aligned}', title: 'Résolution alignée sur le =' },
-            { label: '+col', op: 'addCol', command: 'addColumnAfter', title: 'Bloc (matrice, système) : ajouter une colonne à droite' },
-            { label: '+lig', op: 'addRow', command: 'addRowAfter', title: 'Bloc (matrice, système) : ajouter une ligne en bas' },
-            { label: '−col', op: 'removeCol', command: 'removeColumn', title: 'Bloc : supprimer la dernière colonne (à droite)' },
-            { label: '−lig', op: 'removeRow', command: 'removeRow', title: 'Bloc : supprimer la dernière ligne (en bas)' }
+            { label: 'système', latex: '\\begin{cases}#? \\\\ #?\\end{cases}', title: 'Système d\'équations' },
+            { label: 'matrice', latex: '\\begin{pmatrix}#? & #? \\\\ #? & #?\\end{pmatrix}', title: 'Matrice 2×2' },
+            { label: 'tableau', latex: '\\begin{matrix}#? & #? & #? \\\\ #? & #? & #? \\\\ #? & #? & #?\\end{matrix}', title: 'Tableau 3×3 sans parenthèses (tableau de signes, de variations, Horner) : agrandis-le avec « bloc + colonne » / « bloc + ligne »' },
+            { label: 'déterminant', latex: '\\begin{vmatrix}#? & #? \\\\ #? & #?\\end{vmatrix}', title: 'Déterminant 2×2' },
+            { label: 'aligner sur =', latex: '\\begin{aligned}#? &= #? \\\\ #? &= #?\\end{aligned}', title: 'Résolution alignée sur le =' },
+            { label: 'bloc + colonne', op: 'addCol', command: 'addColumnAfter', title: 'Bloc (matrice, système) : ajouter une colonne à droite' },
+            { label: 'bloc + ligne', op: 'addRow', command: 'addRowAfter', title: 'Bloc (matrice, système) : ajouter une ligne en bas' },
+            { label: 'bloc − colonne', op: 'removeCol', command: 'removeColumn', title: 'Bloc : supprimer la dernière colonne (à droite)' },
+            { label: 'bloc − ligne', op: 'removeRow', command: 'removeRow', title: 'Bloc : supprimer la dernière ligne (en bas)' }
         ]
     },
     {

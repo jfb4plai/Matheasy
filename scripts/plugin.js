@@ -1,8 +1,9 @@
 /**
- * Matheasy — phase 0 : insère le corpus (corpus/formules.json) dans le document.
- * Un libellé + une équation par ligne. Les formules ayant une variante MathML
- * sont insérées deux fois (LaTeX puis MathML) pour comparer les rendus.
- * Chaque insertion renvoie un diagnostic (booléen de AddMathEquation ou erreur).
+ * Matheasy — point d'entrée du plugin ONLYOFFICE.
+ *  - vérifie que l'API ONLYOFFICE (plugins.js, chargé en ligne) est présente, sinon message clair
+ *  - init : démarre l'éditeur (editor.js) et le graphique (geogebra.js)
+ *  - événements du document (curseur, menu contextuel « Modifier avec Matheasy »)
+ *  - outils de test (Ctrl+Maj+D) : corpus, sondes de l'API, expériences de rendu
  */
 (function () {
     'use strict';
