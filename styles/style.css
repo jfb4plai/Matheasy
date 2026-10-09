@@ -1,6 +1,8 @@
+/* Charte PLAI : teal #0f6e56, orange #f97316, DM Sans (texte) + DM Serif Display (titres) ; repli système hors ligne */
+:root { --teal: #0f6e56; --teal-bg: #e1f5ee; --teal-border: #1d9e75; --orange: #f97316; --text: #1a1814; }
 html, body { height: 100%; margin: 0; overflow-y: auto !important; }
-body { font-family: "Segoe UI", sans-serif; padding: 10px 12px 40px; font-size: 13px; box-sizing: border-box; }
-h2 { margin: 0 0 8px; font-size: 18px; }
+body { font-family: "DM Sans", "Segoe UI", Arial, sans-serif; color: var(--text); background: #fff; padding: 10px 12px 40px; font-size: 13px; box-sizing: border-box; }
+h2 { margin: 0 0 8px; font-size: 18px; font-family: "DM Serif Display", Georgia, serif; font-weight: normal; color: var(--teal); }
 .version { font-size: 12px; font-weight: normal; color: #666; }
 button { font: inherit; cursor: pointer; }
 .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
@@ -8,17 +10,17 @@ button { font: inherit; cursor: pointer; }
 .tab.active { background: #fff; border-bottom-color: #fff; font-weight: 600; }
 .palette { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; border: 1px solid #cbcbcb; border-radius: 0 4px 4px 4px; min-height: 76px; align-content: flex-start; }
 .key { min-width: 42px; height: 34px; padding: 0 8px; font-size: 16px; border: 1px solid #cbcbcb; border-radius: 4px; background: #fff; }
-.key:hover { background: #eaf1ff; border-color: #4473ca; }
-.field { display: block; width: 100%; box-sizing: border-box; margin: 10px 0; padding: 10px; min-height: 90px; font-size: 28px; border: 1px solid #4473ca; border-radius: 4px; background: #fff; }
+.key:hover { background: var(--teal-bg); border-color: var(--teal); }
+.field { display: block; width: 100%; box-sizing: border-box; margin: 10px 0; padding: 10px; min-height: 90px; font-size: 28px; border: 1px solid var(--teal); border-radius: 4px; background: #fff; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
 .opt { font-size: 12px; color: #444; }
-.primary { padding: 7px 16px; background: #4473ca; color: #fff; border: 0; border-radius: 4px; font-weight: 600; }
+.primary { padding: 7px 16px; background: var(--teal); color: #fff; border: 0; border-radius: 4px; font-weight: 600; }
 .row button:not(.primary) { padding: 7px 12px; border: 1px solid #cbcbcb; border-radius: 4px; background: #fff; }
 .anno { border: 1px solid #cbcbcb; border-radius: 4px; padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .anno button { padding: 5px 10px; border: 1px solid #cbcbcb; border-radius: 4px; background: #fff; }
 .swatch { width: 28px; height: 28px; padding: 0; border-radius: 50% !important; }
 .swatch.red { background: #dc0000 !important; } .swatch.blue { background: #0046c8 !important; } .swatch.green { background: #008c28 !important; }
-.status { min-height: 20px; margin: 8px 0; color: #2e6b2e; }
+.status { min-height: 20px; margin: 8px 0; color: var(--teal); }
 .status.error { color: #b00020; }
 .dev { margin-top: 10px; } .dev button { margin: 2px; padding: 3px 8px; }
 #log { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; white-space: pre-wrap; font-size: 12px; }
@@ -32,8 +34,8 @@ button { font: inherit; cursor: pointer; }
 /* On masque les boutons internes de MathLive (clavier, menu) : les palettes les remplacent */
 math-field::part(virtual-keyboard-toggle), math-field::part(menu-toggle) { display: none; }
 
-.detect { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 8px; padding: 6px 10px; background: #e6f3ff; border: 1px solid #7fb2e5; border-radius: 4px; }
-.detect button { padding: 3px 10px; border: 1px solid #4473ca; border-radius: 4px; background: #4473ca; color: #fff; }
+.detect { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 8px; padding: 6px 10px; background: var(--teal-bg); border: 1px solid var(--teal-border); border-radius: 4px; }
+.detect button { padding: 3px 10px; border: 1px solid var(--teal); border-radius: 4px; background: var(--teal); color: #fff; }
 /* Panneau latéral : colonne étroite */
 body.panel { padding: 8px; font-size: 12px; }
 body.panel h2 { font-size: 15px; }
@@ -59,3 +61,13 @@ body.panel .field.step { font-size: 20px; min-height: 48px; }
 .dev { display: none; }
 body.devmode .dev { display: block; }
 .version { user-select: none; }
+
+/* Outils secondaires repliables (annotation, graphique, tableau) */
+details.tool { margin: 6px 0; border: 1px solid #cbcbcb; border-radius: 4px; background: #fff; }
+details.tool > summary { cursor: pointer; padding: 6px 10px; font-weight: 600; color: var(--teal); list-style-position: inside; }
+details.tool > summary:hover { background: var(--teal-bg); }
+details.tool[open] > summary { border-bottom: 1px solid #e3e3e3; }
+details.tool > .anno { border: 0; }
+details.tool > .hint, details.tool .anno > .hint { flex-basis: 100%; margin: 0 8px 6px; }
+.primary:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.editmode { border-color: var(--orange) !important; }

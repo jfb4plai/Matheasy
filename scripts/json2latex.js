@@ -20,7 +20,7 @@ window.Matheasy = window.Matheasy || {};
         8746: '\\cup', 8745: '\\cap', 8709: '\\emptyset', 8704: '\\forall', 8707: '\\exists',
         172: '\\neg', 8743: '\\land', 8744: '\\lor', 8706: '\\partial', 8711: '\\nabla',
         8741: '\\parallel', 8869: '\\perp', 8736: '\\angle', 9651: '\\triangle', 8764: '\\sim',
-        176: '^\\circ', 8728: '\\circ', 8722: '-', 8943: '\\cdots', 8230: '\\ldots', 8943: '\\cdots',
+        176: '^\\circ', 8728: '\\circ', 8722: '-', 8943: '\\cdots', 8230: '\\ldots',
         8477: '\\mathbb{R}', 8469: '\\mathbb{N}', 8484: '\\mathbb{Z}', 8474: '\\mathbb{Q}', 8450: '\\mathbb{C}',
         9633: '\\square', 11034: '\\placeholder{}',
         945: '\\alpha', 946: '\\beta', 947: '\\gamma', 948: '\\delta', 949: '\\varepsilon', 1013: '\\epsilon',

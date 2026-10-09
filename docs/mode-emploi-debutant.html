@@ -1,16 +1,18 @@
 <!doctype html><html lang="fr-BE"><head><meta charset="utf-8"><title>Matheasy — pas à pas pour débuter</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&family=DM+Serif+Display&display=swap">
 <style>
-body{font-family:'Segoe UI',Arial,sans-serif;max-width:760px;margin:24px auto;padding:0 18px;color:#1a1a1a;line-height:1.65;font-size:19px}
-h1{color:#0A9370;border-left:8px solid #0A9370;padding-left:12px;font-size:32px}
-h2{color:#fff;background:#0A9370;padding:8px 14px;border-radius:6px;font-size:23px;margin-top:34px;page-break-after:avoid}
+h1,h2{font-family:'DM Serif Display',Georgia,serif;font-weight:normal}
+body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;max-width:760px;margin:24px auto;padding:0 18px;color:#1a1a1a;line-height:1.65;font-size:19px}
+h1{color:#0f6e56;border-left:8px solid #0f6e56;padding-left:12px;font-size:32px}
+h2{color:#fff;background:#0f6e56;padding:8px 14px;border-radius:6px;font-size:23px;margin-top:34px;page-break-after:avoid}
 ol{padding-left:28px}li{margin:10px 0}
-.btn{display:inline-block;background:#3a63c8;color:#fff;border-radius:5px;padding:1px 10px;font-weight:600;font-size:17px}
+.btn{display:inline-block;background:#0f6e56;color:#fff;border-radius:5px;padding:1px 10px;font-weight:600;font-size:17px}
 .key{display:inline-block;border:2px solid #666;border-bottom-width:4px;border-radius:5px;padding:0 8px;background:#f4f4f4;font-weight:600;font-size:17px}
-.tip{background:#E1F5EE;border-left:6px solid #0A9370;padding:10px 14px;margin:14px 0;border-radius:4px}
+.tip{background:#E1F5EE;border-left:6px solid #0f6e56;padding:10px 14px;margin:14px 0;border-radius:4px}
 .warn{background:#FFFDE7;border-left:6px solid #F97316;padding:10px 14px;margin:14px 0;border-radius:4px}
 .res{background:#f5f5f5;padding:8px 14px;border-radius:4px;margin:10px 0}
 table{border-collapse:collapse;width:100%;font-size:17px}td,th{border:1px solid #bbb;padding:8px;text-align:left}th{background:#E1F5EE}
-img.logo{height:40px}footer{margin-top:40px;font-size:14px;color:#666;border-top:1px solid #ddd;padding-top:8px}
+img.logo{height:40px;width:auto}footer{margin-top:40px;font-size:14px;color:#666;border-top:1px solid #ddd;padding-top:8px}
 </style></head><body>
 <img class="logo" src="plai-logo.jpg" alt="PLAI">
 <h1>Matheasy : écrire des mathématiques, pas à pas</h1>
@@ -31,7 +33,7 @@ img.logo{height:40px}footer{margin-top:40px;font-size:14px;color:#666;border-top
 <li><strong>Clique dans ton document</strong>, à l'endroit où tu veux la formule. Un petit trait qui clignote apparaît.</li>
 <li>Dans la colonne de droite, clique dans le <strong>grand cadre blanc</strong> (le champ).</li>
 <li>Tape au clavier : <strong>2x+3=7</strong></li>
-<li>Clique sur le bouton bleu <span class="btn">Insérer dans le document</span>.</li>
+<li>Clique sur le bouton vert <span class="btn">Insérer dans le document</span>.</li>
 </ol>
 <div class="res">Ta formule apparaît dans le document. Le cadre blanc se vide tout seul : tu peux en écrire une autre.</div>
 <div class="tip">Tu peux aussi cliquer sur les <strong>boutons</strong> en haut de la colonne (<strong>a/b</strong>, <strong>√</strong>, <strong>xⁿ</strong>…) au lieu de taper.</div>
@@ -79,7 +81,7 @@ img.logo{height:40px}footer{margin-top:40px;font-size:14px;color:#666;border-top
 <h2>7. Mettre en couleur ou barrer</h2>
 <ol>
 <li>Dans ton document, <strong>sélectionne</strong> avec la souris la partie à colorer (ou à barrer).</li>
-<li>Dans la colonne de droite, tout en bas, trouve le cadre <strong>Annoter la sélection</strong>.</li>
+<li>Dans la colonne de droite, sous le bouton <span class="btn">Insérer dans le document</span>, clique sur le titre <strong>Annoter la sélection</strong> : le cadre s'ouvre.</li>
 <li>Clique sur un <strong>rond de couleur</strong> (rouge, bleu, vert) ou sur <span class="btn">Barrer</span>.</li>
 </ol>
 <div class="tip">Pour enlever la couleur : <span class="btn">Sans couleur</span>. Pour enlever le trait : <span class="btn">Ne plus barrer</span>.</div>
@@ -104,6 +106,7 @@ img.logo{height:40px}footer{margin-top:40px;font-size:14px;color:#666;border-top
 <table>
 <tr><th>Ce qui se passe</th><th>Ce qu'il faut faire</th></tr>
 <tr><td>Rien n'apparaît dans le document</td><td>Clique <strong>dans le document</strong> d'abord (le petit trait doit clignoter), puis refais « Insérer ».</td></tr>
+<tr><td>Message rouge « Matheasy ne peut pas démarrer »</td><td>Matheasy a besoin d'internet quand on l'ouvre. Vérifie la connexion, ferme Matheasy et rouvre-le (menu <strong>Plugins</strong> → <strong>Matheasy</strong>).</td></tr>
 <tr><td>La colonne de droite n'est pas là</td><td>Menu <strong>Plugins</strong> → clique sur <strong>Matheasy</strong>.</td></tr>
 <tr><td>Un message rouge s'affiche en bas</td><td>Lis-le : il dit ce qui ne va pas. Prends une photo de l'écran et envoie-la à la personne qui t'aide.</td></tr>
 <tr><td>Le bandeau jaune est resté</td><td>Clique sur <span class="btn">Annuler</span>.</td></tr>
@@ -124,7 +127,7 @@ img.logo{height:40px}footer{margin-top:40px;font-size:14px;color:#666;border-top
 <tr><td><span class="btn">Annuler</span></td><td>(bandeau jaune) Renonce à la correction.</td></tr>
 </table>
 
-<div class="warn"><strong>Nouveautés en cours de test</strong> : le tableau avec traits (signes, variations), le graphique d'une fonction et le bouton GeoGebra. Ils sont en bas de la colonne. Tu peux les ignorer pour le moment.</div>
+<div class="tip"><strong>Deux outils en plus</strong>, rangés sous le bouton <span class="btn">Insérer dans le document</span> : <strong>Graphique de la fonction</strong> (dessiner la courbe d'une fonction) et <strong>Tableau avec traits</strong> (tableau de signes, de variations). Ils restent fermés tant que tu ne cliques pas sur leur titre. Tu peux les ignorer au début. Quand tu voudras t'en servir, le mode d'emploi complet (<strong>mode-emploi.pdf</strong>) les explique.</div>
 
 <footer>Matheasy — Jean-François Beguin, Référent numérique, PLAI · https://jfb4plai.com · Code sous licence PolyForm Noncommercial 1.0.0 · Logo PLAI : tous droits réservés.</footer>
 </body></html>

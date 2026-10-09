@@ -48,7 +48,7 @@ window.Matheasy = window.Matheasy || {};
                 else if (name === 'le' || name === 'leq') { out += '<='; }
                 else if (name === 'ge' || name === 'geq') { out += '>='; }
                 else if (name === 'ne' || name === 'neq') { out += '!='; }
-                else if (/^(sin|cos|tan|arcsin|arccos|arctan|ln|log|exp|sinh|cosh|tanh)$/.test(name)) { out += name.replace('arc', 'a'); }
+                else if (/^(sin|cos|tan|arcsin|arccos|arctan|ln|log|exp|sinh|cosh|tanh)$/.test(name)) { out += (/[\w)]$/.test(out) ? ' ' : '') + name.replace('arc', 'a'); } // « x cos x », pas « xcos x »
                 else if (name === 'quad' || name === 'qquad') { out += ' '; }
                 else { out += name; } // lettre grecque ou fonction inconnue : on laisse le nom
                 continue;
@@ -149,10 +149,17 @@ window.Matheasy = window.Matheasy || {};
         } catch (e) { info.style.color = '#b00020'; info.textContent = 'Fonction non reconnue : ' + e.message + ' (' + r.funcs.map(function (f) { return f.expr; }).join(' ; ') + ')'; return false; }
         var xmin = parseFloat($('plot-xmin').value), xmax = parseFloat($('plot-xmax').value);
         if (!(xmin < xmax)) { info.style.color = '#b00020'; info.textContent = 'Intervalle de x incorrect.'; return false; }
-        var res = M.drawPlot(cv, funcs, { xmin: xmin, xmax: xmax });
+        var showValues = !!($('plot-values') && $('plot-values').checked);
+        var res = M.drawPlot(cv, funcs, { xmin: xmin, xmax: xmax, showValues: showValues });
         var f2 = function (a) { return a.length ? a.map(function (v) { return String(parseFloat(v.toFixed(3))); }).join(' ; ') : 'aucun sur cet intervalle'; };
-        var t = 'f : ' + r.funcs[0].ggb.replace(/^[a-z]\(x\)=/, 'f(x) = ') + '\nZéros de f : x ≈ ' + f2(res.zeros[0]);
-        if (funcs.length > 1) { t += '\ng(x) = ' + r.funcs[1].expr + '\nZéros de g : x ≈ ' + f2(res.zeros[1]) + '\nf(x) = g(x) : x ≈ ' + f2(res.inter); }
+        var t = 'f : ' + r.funcs[0].ggb.replace(/^[a-z]\(x\)=/, 'f(x) = ');
+        if (funcs.length > 1) { t += '\ng(x) = ' + r.funcs[1].expr; }
+        if (showValues) {
+            t += '\nZéros de f : x ≈ ' + f2(res.zeros[0]);
+            if (funcs.length > 1) { t += '\nZéros de g : x ≈ ' + f2(res.zeros[1]) + '\nf(x) = g(x) : x ≈ ' + f2(res.inter); }
+        } else {
+            t += '\nZéros et intersections masqués (case « Afficher les zéros… » ci-dessus).';
+        }
         info.style.color = ''; info.textContent = t;
         return true;
     }
@@ -164,6 +171,7 @@ window.Matheasy = window.Matheasy || {};
         if (mf) { mf.addEventListener('input', function () { clearTimeout(drawTimer); drawTimer = setTimeout(draw, 500); }); }
         $('plot-xmin').addEventListener('change', draw);
         $('plot-xmax').addEventListener('change', draw);
+        if ($('plot-values')) { $('plot-values').addEventListener('change', draw); }
         draw();
         $('plot-insert').addEventListener('click', function () {
             if (!draw()) { say('Rien à insérer : trace d\'abord une fonction.', true); return; }

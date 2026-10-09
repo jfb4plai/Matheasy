@@ -11,6 +11,17 @@
         document.getElementById('log').value += msg + '\n';
     }
 
+    // plugins.js (API ONLYOFFICE) est chargé depuis onlyoffice.github.io : sans internet, il manque et rien ne marche.
+    // On le dit clairement au lieu de laisser un panneau inerte.
+    if (!window.Asc || !window.Asc.plugin) {
+        var st = document.getElementById('status');
+        if (st) {
+            st.className = 'status error';
+            st.textContent = 'Matheasy ne peut pas démarrer : l\'API d\'ONLYOFFICE n\'a pas pu être chargée (connexion internet nécessaire à l\'ouverture du plugin). Vérifie la connexion, puis ferme et rouvre Matheasy.';
+        }
+        return;
+    }
+
     window.Asc.plugin.init = function () {
         if (window.Matheasy && window.Matheasy.initEditor) { window.Matheasy.initEditor(); }
         if (window.Matheasy && window.Matheasy.initGeogebra) { window.Matheasy.initGeogebra(); }

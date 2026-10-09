@@ -274,7 +274,9 @@ window.Matheasy = window.Matheasy || {};
                 // Nouveau paragraphe vide juste après les lignes d'origine (même chemin que l'insertion normale : formule en ligne, à gauche)
                 if (typeof doc.AddElement !== 'function' || typeof Api.CreateParagraph !== 'function') { return JSON.stringify({ ok: 0, fail: 1, errors: ['AddElement absent : remplacement impossible'] }); }
                 var np = Api.CreateParagraph();
-                doc.AddElement(RT.idxs[RT.idxs.length - 1] + 1, np);
+                var countBefore = doc.GetElementsCount();
+                var firstNew = RT.idxs[RT.idxs.length - 1] + 1;
+                doc.AddElement(firstNew, np);
                 np.Select();
             }
             for (var i = 0; i < L.length; i++) {
@@ -330,6 +332,14 @@ window.Matheasy = window.Matheasy || {};
                     }
                 } catch (e) { res.fail++; res.errors.push('ligne ' + (i + 1) + ' : ' + e.message); }
             }
+            if (RT && res.fail) {
+                // Échec partiel : on retire tout ce qui vient d'être inséré, les lignes d'origine restent intactes (pas de doublon)
+                try {
+                    var added = doc.GetElementsCount() - countBefore;
+                    for (var kr = firstNew + added - 1; kr >= firstNew; kr--) { doc.RemoveElement(kr); }
+                    res.rolledBack = true;
+                } catch (eRb) { res.errors.push('retour arrière : ' + eRb.message); }
+            }
             if (RT && !RT.after && !res.fail) {
                 try { for (var kk = RT.idxs.length - 1; kk >= 0; kk--) { doc.RemoveElement(RT.idxs[kk]); } }
                 catch (eR) { res.errors.push('suppression des anciennes lignes : ' + eR.message); }
@@ -337,7 +347,9 @@ window.Matheasy = window.Matheasy || {};
             return JSON.stringify(res);
         }, false, true, function (out) {
             var r = {}; try { r = JSON.parse(out); } catch (e) { /* ignoré */ }
-            var msg = (r.ok || 0) + ' ligne(s) insérée(s)' + (notesCount ? ', dont ' + notesCount + ' avec commentaire' : ', sans commentaire reconnu') + (r.fail ? ', ' + r.fail + ' échec(s)' : '') + '.';
+            var msg = r.rolledBack
+                ? 'Remplacement annulé : ONLYOFFICE a refusé ' + r.fail + ' ligne(s). Le document est revenu à son état d\'avant, rien n\'a été modifié.'
+                : (r.ok || 0) + ' ligne(s) insérée(s)' + (notesCount ? ', dont ' + notesCount + ' avec commentaire' : ', sans commentaire reconnu') + (r.fail ? ', ' + r.fail + ' échec(s)' : '') + '.';
             if (r.noteSkipped) { msg += ' Commentaires non insérés (EnterText absent).'; }
             if (r.moved !== undefined || r.italic !== undefined) { msg += ' [sortie de formule : ' + (r.moved || 0) + ', italique : ' + (r.italic || 0) + ']'; }
             if (r.errors && r.errors.length) { msg += ' ' + r.errors.join(' ; '); }
@@ -725,9 +737,24 @@ window.Matheasy = window.Matheasy || {};
         }
     }
 
+    // Mémorise (sur ce poste) les sections ouvertes et l'affichage des zéros : on retrouve son panneau tel qu'on l'a laissé
+    function initRemembered() {
+        ['tool-anno', 'tool-plot', 'tool-table'].forEach(function (id) {
+            var d = $(id); if (!d) { return; }
+            try { d.open = localStorage.getItem('matheasyOpen_' + id) === '1'; } catch (e) { /* ignoré */ }
+            d.addEventListener('toggle', function () { try { localStorage.setItem('matheasyOpen_' + id, d.open ? '1' : '0'); } catch (e) { /* ignoré */ } });
+        });
+        var pv = $('plot-values');
+        if (pv) {
+            try { pv.checked = localStorage.getItem('matheasyPlotValues') === '1'; } catch (e) { /* ignoré */ }
+            pv.addEventListener('change', function () { try { localStorage.setItem('matheasyPlotValues', pv.checked ? '1' : '0'); } catch (e) { /* ignoré */ } });
+        }
+    }
+
     M.initEditor = function () {
         var mf = $('mf');
         initDevMode();
+        initRemembered();
         if (M.mode === 'panel') {
             document.body.classList.add('panel');
             if ($('closeafter')) { $('closeafter').checked = false; $('closeafter').parentNode.style.display = 'none'; }

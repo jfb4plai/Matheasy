@@ -9,6 +9,9 @@ const cases = [
   ['racine n', '\\sqrt[3]{x}', 'f(x)=nthroot(x,3)'],
   ['valeur absolue', '\\left|x-2\\right|', 'f(x)=abs(x-2)'],
   ['trigo', '\\sin\\left(x\\right)', 'f(x)=sin(x)'],
+  ['trigo sans parenthèses', '\\sin x', 'f(x)=sin x'],
+  ['produit x cos x', '\\pi x\\cos x', 'f(x)=pi x cos x'],
+  ['coefficient devant ln', '2\\ln\\left(x\\right)', 'f(x)=2 ln(x)'],
   ['cercle', 'x^2+y^2=4', 'x^(2)+y^(2)=4'],
   ['vide', '', ''],
 ];
