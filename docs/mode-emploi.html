@@ -11,7 +11,7 @@ code,kbd{background:#f1f1f1;padding:1px 5px;border-radius:3px}table{border-colla
 footer{margin-top:36px;font-size:13px;color:#666;border-top:1px solid #ddd;padding-top:8px}img.logo{height:36px;width:auto}
 </style></head><body>
 <img class="logo" src="plai-logo.jpg" alt="PLAI"><h1>Matheasy : mode d'emploi</h1>
-<p>Le panneau Matheasy s'ouvre à droite du document. En haut : les palettes et le champ de saisie. En dessous, trois outils repliés : <strong>Annoter</strong>, <strong>Graphique</strong>, <strong>Tableau</strong>. Clique sur leur titre pour les ouvrir. Matheasy se souvient, sur ton ordinateur, des outils que tu as laissés ouverts.</p>
+<p>Matheasy fonctionne dans les <strong>documents texte</strong> (.docx) et, depuis la version 0.13, dans les <strong>PDF</strong> (voir section 9). Le panneau Matheasy s'ouvre à droite du document. En haut : les palettes et le champ de saisie. En dessous, trois outils repliés : <strong>Annoter</strong>, <strong>Graphique</strong>, <strong>Tableau</strong>. Clique sur leur titre pour les ouvrir. Matheasy se souvient, sur ton ordinateur, des outils que tu as laissés ouverts.</p>
 <div class="note">Matheasy a besoin d'une connexion internet au moment où on l'ouvre (l'interface d'ONLYOFFICE se charge en ligne). Sans connexion, un message rouge l'indique.</div>
 
 <h2>1. Écrire une formule</h2>
@@ -19,6 +19,7 @@ footer{margin-top:36px;font-size:13px;color:#666;border-top:1px solid #ddd;paddi
 <li>Tape dans le champ, ou clique sur les boutons des palettes (Structures, Symboles, Grec, Analyse, Ensembles &amp; logique, Fonctions, Probabilités).</li>
 <li>Clique sur <strong>Insérer dans le document</strong> : la formule arrive dans le document comme équation modifiable.</li></ol>
 <div class="ok">Touche <kbd>Entrée</kbd> : nouvelle ligne dans le champ. Chaque ligne devient un paragraphe du document. Idéal pour une résolution pas à pas.</div>
+<p><strong>Multiplication :</strong> le point du clavier devient un point de multiplication centré (<code>3.(x+9)</code> → 3·(x+9)), car en FWB la virgule est le séparateur décimal. Pour garder un vrai point, décoche « Le point du clavier = multiplication ». La touche <kbd>*</kbd> donne aussi le point centré.</p>
 
 <h2>2. Une résolution avec commentaires</h2>
 <p>Bouton <strong>+ Commentaire</strong> : ajoute un texte à droite de la ligne (« on multiplie les deux membres par 6 »). L'écart et l'italique se règlent sous le champ.</p>
@@ -57,10 +58,20 @@ footer{margin-top:36px;font-size:13px;color:#666;border-top:1px solid #ddd;paddi
 <li><strong>Insérer le tableau</strong> : un vrai tableau du document, avec traits. Remplis ensuite les cases au clavier, ou avec Matheasy (curseur dans la case, puis Insérer).</li></ol>
 <p>La palette <strong>Fonctions</strong> fournit les signes utiles dans les cases : ↗, ↘, +∞, −∞, 0, +, −.</p>
 
+<h2>9. Dans un PDF</h2>
+<p>Ouvre le PDF dans ONLYOFFICE, puis Matheasy : un bandeau vert « Dans un PDF » apparaît en haut du panneau.</p>
+<ol><li>Clique sur <strong>Modifier PDF</strong>, puis <strong>Insertion</strong>, puis <strong>Zone de texte</strong>, et trace un cadre à l'endroit voulu.</li>
+<li>Clique <strong>dans</strong> ce cadre.</li>
+<li>Écris la formule ou la résolution dans Matheasy, puis <strong>Insérer dans le document</strong>.</li></ol>
+<table><tr><th>Ce qui marche</th><th>Ce qui ne marche pas</th></tr>
+<tr><td>Formule et résolution sur plusieurs lignes, en une seule équation, commentaires compris (dans une colonne à droite).<br>La formule reste modifiable dans ONLYOFFICE (barre Équation), même après enregistrement et réouverture.<br>Graphique de la fonction : posé sur la page, à 25 mm du bord gauche et 40 mm du haut, à déplacer en mode Modifier PDF.<br>Couleur « mode élève », point = multiplication.</td>
+<td>Les lignes d'une résolution sont <strong>centrées</strong> : ONLYOFFICE ne permet pas de les aligner à gauche ou sur le signe =.<br>« Modifier la formule sélectionnée » : une formule du PDF ne se recharge pas dans Matheasy ; on la corrige dans ONLYOFFICE.<br>Outils masqués dans un PDF : annotation couleur/barré (utilise la barre Commentaire d'ONLYOFFICE) et tableau à traits.</td></tr></table>
+<div class="note">Dans les autres lecteurs (Edge, Chrome, Acrobat), la formule s'affiche correctement mais ne se modifie pas. Pour un travail à reprendre souvent, préfère un document Word (.docx).</div>
+
 <h2>Limites connues</h2>
 <ul><li>Les fractions écrites dans une ligne de texte sont affichées plus petites : c'est le comportement d'ONLYOFFICE.</li>
 <li>Dans le champ du panneau, la sélection à la souris ne marche pas : clic droit → « Tout sélectionner ».</li>
 <li>Pas de double-clic sur une formule du document pour l'ouvrir : utilise le clic droit ou le bouton « Modifier ».</li>
 <li>Commandes non prises en charge par ONLYOFFICE : barré dans la formule (<code>\cancel</code>), couleur dans la formule (<code>\color</code>). Utilise l'outil Annoter, qui agit sur le document.</li></ul>
 <p>Un problème ? Note les étapes et envoie-les à l'auteur.</p>
-<footer>Matheasy v0.12.0 — Jean-François Beguin, Référent numérique, PLAI · https://jfb4plai.com · Code sous licence PolyForm Noncommercial 1.0.0 · Logo PLAI : tous droits réservés.</footer></body></html>
+<footer>Matheasy v0.13.0 — Jean-François Beguin, Référent numérique, PLAI · https://jfb4plai.com · Code sous licence PolyForm Noncommercial 1.0.0 · Logo PLAI : tous droits réservés.</footer></body></html>

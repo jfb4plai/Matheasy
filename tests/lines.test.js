@@ -23,5 +23,20 @@ for (const [name, input, expected] of cases) {
   const ok = JSON.stringify(got) === JSON.stringify(expected);
   if (ok) console.log('ok  ', name); else { ko++; console.log('KO  ', name, '\n  obtenu :', JSON.stringify(got), '\n  attendu:', JSON.stringify(expected)); }
 }
-console.log(ko ? ko + ' échec(s)' : 'tous les tests passent (' + cases.length + ')');
+// Point du clavier = multiplication
+const dots = [
+  ['facteur et parenthèse', '3.(x+9)', '3\\cdot (x+9)'],
+  ['avec \\left(', '3.\\left(x+9\\right)', '3\\cdot \\left(x+9\\right)'],
+  ['deux nombres', '4.16', '4\\cdot 16'],
+  ['lettres', 'a.b', 'a\\cdot b'],
+  ['fin de phrase intacte', 'x=2.', 'x=2.'],
+  ['points de suspension intacts', '1+2+...+n', '1+2+...+n'],
+  ['texte intact', 'x\\text{ cm.}', 'x\\text{ cm.}'],
+  ['commande avant', '\\pi.r^2', '\\pi\\cdot r^2'],
+];
+for (const [name, input, expected] of dots) {
+  const got = M.dotToCdot(input);
+  if (got === expected) { console.log('ok  ', name); } else { ko++; console.log('KO  ', name, '\n  obtenu :', got, '\n  attendu:', expected); }
+}
+console.log(ko ? ko + ' échec(s)' : 'tous les tests passent (' + (cases.length + dots.length) + ')');
 process.exit(ko ? 1 : 0);

@@ -78,4 +78,25 @@ window.Matheasy = window.Matheasy || {};
             .map(function (p) { return splitComment(p); })
             .filter(function (l) { return l.latex !== '' || l.note !== ''; });
     };
+
+    // Point du clavier = multiplication (FWB : la virgule est le séparateur décimal) : « 3.(x+9) » -> « 3\cdot(x+9) ».
+    // Un point entre deux opérandes (chiffre, lettre, parenthèse, commande) devient \cdot ; « … » et le texte (\text{…}) restent intacts.
+    M.dotToCdot = function (latex) {
+        var s = String(latex || ''), out = '', i = 0;
+        var before = /[0-9A-Za-z)}\]]/, after = /[0-9A-Za-z(\\{[]/;
+        while (i < s.length) {
+            var t = /^\\(text|textrm|mathrm|operatorname)\s*\{/.exec(s.slice(i));
+            if (t) {
+                // recopie le bloc de texte tel quel (accolades équilibrées)
+                var depth = 0, j = i + t[0].length - 1;
+                for (; j < s.length; j++) { if (s[j] === '{') { depth++; } else if (s[j] === '}') { depth--; if (depth === 0) { j++; break; } } }
+                out += s.slice(i, j); i = j; continue;
+            }
+            var c = s[i];
+            if (c === '\\') { var m = /^\\([a-zA-Z]+|.)/.exec(s.slice(i)); out += m[0]; i += m[0].length; continue; }
+            if (c === '.' && i > 0 && before.test(s[i - 1]) && i + 1 < s.length && after.test(s[i + 1])) { out += '\\cdot '; i++; continue; }
+            out += c; i++;
+        }
+        return out;
+    };
 })(window.Matheasy);

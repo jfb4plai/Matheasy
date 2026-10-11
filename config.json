@@ -4,7 +4,7 @@
         "fr": "Matheasy"
     },
     "guid": "asc.{bf6924ef-ae73-473f-8988-b310d6b26db1}",
-    "version": "0.12.0",
+    "version": "0.13.0",
     "baseUrl": "",
     "minVersion": "8.2.0",
     "variations": [
@@ -23,7 +23,8 @@
             "isModal": false,
             "isInsideMode": true,
             "EditorsSupport": [
-                "word"
+                "word",
+                "pdf"
             ],
             "initDataType": "none",
             "isUpdateOleOnResize": false,
@@ -50,7 +51,8 @@
             ],
             "isViewer": false,
             "EditorsSupport": [
-                "word"
+                "word",
+                "pdf"
             ],
             "initDataType": "none",
             "isUpdateOleOnResize": false,

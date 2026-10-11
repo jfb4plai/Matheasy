@@ -26,7 +26,18 @@
     </script>
 </head>
 <body>
-    <h2>Matheasy <span class="version">v0.12.0</span></h2>
+    <h2>Matheasy <span class="version">v0.13.0</span></h2>
+
+    <!-- Mode PDF (body.pdf) : visible seulement dans un PDF -->
+    <div id="pdf-banner" class="pdf-only pdf-banner">
+        <strong>Dans un PDF</strong>, pour insérer une formule :
+        <ol>
+            <li>Cliquer sur <b>Modifier PDF</b>, puis <b>Insertion</b>, puis <b>Zone de texte</b>, et tracer un cadre.</li>
+            <li>Cliquer <b>dans</b> ce cadre.</li>
+            <li>Écrire la formule ici, puis <b>Insérer dans le document</b>.</li>
+        </ol>
+        <div class="hint">La formule reste modifiable dans ONLYOFFICE (barre Équation), même après enregistrement. Dans un PDF, les lignes d'une résolution sont centrées et une formule ne se recharge pas dans Matheasy : pour un travail à reprendre souvent, préférer un document Word.</div>
+    </div>
 
     <div id="detect" class="detect" style="display:none">Formule détectée sous le curseur. <button id="btn-detect-edit" type="button">Modifier cette formule</button></div>
 
@@ -35,7 +46,7 @@
 
     <math-field id="mf" class="field" placeholder="\text{Écris ou compose ta formule ici}"></math-field>
 
-    <div id="noteopts" class="hint" style="display:none">
+    <div id="noteopts" class="hint word-only" style="display:none">
         <label class="opt">Écart du commentaire : <select id="notegap">
             <option value="8">petit</option>
             <option value="16" selected>moyen</option>
@@ -50,11 +61,12 @@
         <button id="btn-newline" type="button" title="Ajoute une ligne sous la ligne courante (touche Entrée)">+ Ligne</button>
         <button id="btn-exercise" type="button" title="Ajoute un titre « Exercice N » (numérotation automatique) sur une ligne à part">+ Exercice</button>
         <button id="btn-comment" type="button" title="Ajoute un commentaire à droite de la ligne courante">+ Commentaire</button>
-        <button id="btn-edit" type="button" title="Sélectionne la formule, ou place le curseur dans son paragraphe">Modifier la formule sélectionnée</button>
-        <label class="opt">Insertion : <select id="mode">
+        <button id="btn-edit" class="word-only" type="button" title="Sélectionne la formule, ou place le curseur dans son paragraphe">Modifier la formule sélectionnée</button>
+        <label class="opt word-only">Insertion : <select id="mode">
             <option value="inline">Dans le texte (à gauche)</option>
             <option value="cursor">Au curseur (réglage ONLYOFFICE, centrée)</option>
         </select></label>
+        <label class="opt" title="En FWB, la virgule est le séparateur décimal : 3.(x+9) devient 3·(x+9). Décocher pour garder le point (ex. 4.5 au sens de quatre et demi)."><input type="checkbox" id="dotmul" checked> Le point du clavier = multiplication (3.(x+9) → 3·(x+9))</label>
         <label class="opt"><input type="checkbox" id="autoclear" checked> Vider le champ après insertion</label>
         <label class="opt"><input type="checkbox" id="closeafter" checked> Fermer la fenêtre après insertion</label>
         <label class="opt">Couleur des lignes insérées : <select id="ink">
@@ -70,7 +82,7 @@
     <div id="status" class="status" role="status" aria-live="polite"></div>
 
     <!-- Outils secondaires repliés par défaut : l'écran principal reste centré sur l'écriture de formules -->
-    <details class="tool" id="tool-anno">
+    <details class="tool word-only" id="tool-anno">
         <summary>Annoter la sélection (couleur, barré)</summary>
         <div class="anno">
             <button id="btn-red" type="button" class="swatch red" title="Rouge" aria-label="Rouge"></button>
@@ -103,7 +115,7 @@
         </div>
     </details>
 
-    <details class="tool" id="tool-table">
+    <details class="tool word-only" id="tool-table">
         <summary>Tableau avec traits (signes, variations, Horner)</summary>
         <div class="anno">
             <label>Modèle

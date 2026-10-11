@@ -8,18 +8,29 @@ Compagnon de [Colorisation PLAI](https://github.com/jfb4plai/colorisation-plai-o
 
 Pas d'objet OLE : les formules sont des **équations natives** du document (insérées via `AddMathEquation`, formats `latex` / `mathml` / `unicode`). L'élève peut donc rouvrir, compléter et annoter les formules de l'enseignant sans le plugin.
 
-## État (v0.12.0 ; v0.11.0 testée dans ONLYOFFICE Desktop le 2026-10-09)
+## État (v0.13.0)
 
-Panneau latéral à droite du document (une variante « fenêtre » reste disponible).
+Panneau latéral à droite du document (une variante « fenêtre » reste disponible). Fonctionne dans les documents texte (.docx) et, depuis la v0.13, dans les PDF (mode léger, voir plus bas).
 
 - **Saisie** : champ [MathLive](https://github.com/arnog/mathlive) multi-lignes (Entrée = nouvelle ligne, chaque ligne devient un paragraphe), palettes par thème (Structures, Symboles, Grec, Analyse, Ensembles & logique, Fonctions, Probabilités), « + Commentaire » à droite d'une ligne, « + Exercice » (titres numérotés).
 - **Cases à compléter** : fraction et racine à cases vides natives, qui disparaissent quand l'élève tape.
 - **Modification** : une formule ou une résolution entière (plusieurs paragraphes) se recharge dans le champ (`scripts/json2latex.js`) et se remplace en place, ou s'insère à la suite. Si ONLYOFFICE refuse une ligne, tout est annulé : pas de doublon.
 - **Outils repliables** (état mémorisé sur le poste) : annotation de la sélection (couleur, barré), graphique de la fonction (tracé hors ligne, zéros et intersections affichés seulement sur demande, insertion en image, export de la commande vers GeoGebra), tableau du document à traits (signes, variations, Horner).
+- **Multiplication** : le point du clavier devient un point de multiplication centré (`3.(x+9)` → 3·(x+9)), option cochée par défaut (en FWB, la virgule est décimale) ; la touche `*` aussi.
 - **Couleur des lignes insérées** : automatique, ou bleu / vert / rouge (travail de l'élève).
 - **Accessibilité** : texte de 16 px minimum, libellés explicites, nom accessible sur chaque touche de palette, messages annoncés aux lecteurs d'écran.
 - **Charte** : PLAI (teal `#0f6e56`, DM Sans / DM Serif Display) ; icône du plugin : logo JFB4PLAI (`tools/generate_icons.py`).
 - **Outils de test** masqués (Ctrl+Maj+D, ou 5 clics sur le numéro de version) : corpus, sondes de l'API, expériences de rendu, calculatrice GeoGebra intégrée.
+
+### Mode PDF (v0.13, léger)
+
+Testé dans ONLYOFFICE Desktop 9.4 (2026-10-10/11). L'API PDF n'a pas `AddMathEquation` : Matheasy détecte le PDF (pages présentes, `AddMathEquation` absente) et colle la formule en MathML (`PasteHtml`) dans la zone de texte où se trouve le curseur (mode Modifier PDF). ONLYOFFICE en fait une **équation native**, modifiable dans sa barre Équation, même après enregistrement et réouverture ; les autres lecteurs l'affichent sans la modifier.
+
+- Une résolution est envoyée en **une seule équation** (`<mtable>`) : des formules ou paragraphes collés séparément sont fusionnés, ou éclatés en nouvelles zones de texte.
+- **Limites** : ONLYOFFICE en fait une matrice aux colonnes **centrées** (alignement à gauche ou sur `=` ignoré) ; une formule du PDF **ne se recharge pas** dans Matheasy (l'API ne voit pas les objets de la page ; `RecognizeContent` les découpe en texte ordinaire et abîme la page) ; annotation couleur/barré et tableau à traits masqués.
+- **Graphique** : image posée sur la page (`page.AddObject`, `SetPosition` en EMU), déplaçable en mode Modifier PDF.
+- `callCommand` ne garde qu'un rappel à la fois : la détection du PDF est lancée seule au démarrage, relancée si sa réponse est écrasée, et refaite au clic sur « Insérer ».
+- Les essais (sondages de l'API PDF) sont conservés sur la branche locale `essai-pdf`.
 
 ### Ce que le moteur d'ONLYOFFICE accepte ou non (testé)
 
@@ -30,7 +41,7 @@ Panneau latéral à droite du document (une variante « fenêtre » reste dispon
 
 ### Historique
 
-Détail version par version : `git log`. Étapes : v0.1-0.4 éditeur, palettes, réédition, MathLive embarqué ; v0.5-0.7 résolutions multi-lignes, commentaires, remplacement en place ; v0.8-0.10 onglet Fonctions, exercices numérotés, tableaux à traits, graphique et GeoGebra ; v0.11 traceur fiable (`sin x`, zéros doubles), remplacement sans doublon, panneau allégé, charte PLAI ; v0.12 texte 16 px minimum, libellés de palette explicites, icône JFB4PLAI, tests lancés avant chaque fabrication.
+Détail version par version : `git log`. Étapes : v0.1-0.4 éditeur, palettes, réédition, MathLive embarqué ; v0.5-0.7 résolutions multi-lignes, commentaires, remplacement en place ; v0.8-0.10 onglet Fonctions, exercices numérotés, tableaux à traits, graphique et GeoGebra ; v0.11 traceur fiable (`sin x`, zéros doubles), remplacement sans doublon, panneau allégé, charte PLAI ; v0.12 texte 16 px minimum, libellés de palette explicites, icône JFB4PLAI, tests lancés avant chaque fabrication ; v0.13 mode PDF léger, point du clavier = multiplication.
 
 ## Tests
 

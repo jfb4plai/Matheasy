@@ -81,7 +81,11 @@ window.Matheasy = window.Matheasy || {};
                  .replace(/\\frown(?![a-zA-Z])/g, '\u2322').replace(/\\smile(?![a-zA-Z])/g, '\u2323');
         out = out.replace(/\\overrightarrow\{/g, '\\vec{');
         out = out.replace(/\\differentialD/g, 'd');
+        out = out.replace(/(^|[^\\])\*/g, '$1\\cdot '); // astérisque tapé au clavier -> point de multiplication (secondaire)
         out = out.replace(/\\mleft/g, '\\left').replace(/\\mright/g, '\\right');
+        // Option « Le point du clavier = multiplication » (cochée par défaut, décision JF 2026-10-11)
+        var dm = document.getElementById('dotmul');
+        if ((!dm || dm.checked) && M.dotToCdot) { out = M.dotToCdot(out); }
         out = M.bracesShorthand(out);
         return out;
     };
@@ -368,12 +372,101 @@ window.Matheasy = window.Matheasy || {};
         });
     }
 
+    // ---- Mode PDF : l'API PDF n'a pas AddMathEquation ; une formule MathML collée dans une zone de texte
+    //      devient une équation native d'ONLYOFFICE (vérifié le 2026-10-10, modifiable après réouverture) ----
+    M.isPdf = false;
+
+    function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    // LaTeX d'une ligne -> élément <math> (MathLive), ou null si MathLive est indisponible
+    M.latexToMathml = function (latex, color) {
+        if (!window.MathLive || typeof window.MathLive.convertLatexToMathMl !== 'function') { return null; }
+        var inner = window.MathLive.convertLatexToMathMl(M.sanitizeLatex(latex)).replace(/<mo>&#8290;<\/mo>/g, '');
+        var attr = color ? ' mathcolor="' + color + '"' : '';
+        return '<math xmlns="http://www.w3.org/1998/Math/MathML"' + attr + '>' + inner + '</math>';
+    };
+
+    var INK_CSS = { blue: 'rgb(0,70,200)', green: 'rgb(0,140,40)', red: 'rgb(220,0,0)' };
+
+    // Contenu MathML d'une ligne, sans l'enveloppe <math>
+    function lineInnerMathml(latex) {
+        return window.MathLive.convertLatexToMathMl(M.sanitizeLatex(latex)).replace(/<mo>&#8290;<\/mo>/g, '');
+    }
+
+    // Plusieurs lignes (essais JF 2026-10-10/11) : des <math> ou des <p> collés séparément sont fusionnés, ou éclatés en
+    // nouvelles zones de texte. Une SEULE équation <mtable> se place dans la zone de texte et reste modifiable.
+    // Limite d'ONLYOFFICE : il en fait une matrice aux colonnes centrées, sans tenir compte de l'alignement demandé.
+    M.buildPdfHtml = function (lines, ink) {
+        var color = INK_CSS[ink] || '';
+        if (!window.MathLive || typeof window.MathLive.convertLatexToMathMl !== 'function') { return { error: 'MathLive indisponible : conversion impossible.' }; }
+        for (var j = 0; j < lines.length; j++) {
+            var lj = lines[j];
+            if (!lj.latex) { continue; }
+            var bad = M.UNSUPPORTED.filter(function (c) { return lj.latex.indexOf(c) !== -1; });
+            if (bad.length) { return { error: 'Ligne ' + (j + 1) + ' : commande non prise en charge par ONLYOFFICE : ' + bad.join(', ') + '.' }; }
+        }
+        var L = '<mtd columnalign="left">';
+        // Les commentaires ont leur propre colonne, à droite : ils restent alignés entre eux
+        var hasNotes = lines.some(function (l) { return l.latex && (l.note || '').trim(); });
+        var noteCell = function (note) { return hasNotes ? L + (note ? '<mspace width="2em"/><mtext mathvariant="italic">' + escapeHtml(note) + '</mtext>' : '') + '</mtd>' : ''; };
+        var rows = lines.map(function (l) {
+            var note = (l.note || '').trim();
+            if (!l.latex) { return '<mtr>' + L + '<mtext mathvariant="bold">' + escapeHtml(note) + '</mtext></mtd>' + noteCell('') + '</mtr>'; }
+            return '<mtr>' + L + lineInnerMathml(l.latex) + '</mtd>' + noteCell(note) + '</mtr>';
+        });
+        var attr = color ? ' mathcolor="' + color + '"' : '';
+        var pstyle = ' style="text-align:left' + (color ? ';color:' + color : '') + '"';
+        return { html: '<p' + pstyle + '><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"' + attr + '><mtable columnalign="left' + (hasNotes ? ' left' : '') + '">' + rows.join('') + '</mtable></math></p>' };
+    };
+
+    function insertPdf(lines) {
+        var built = M.buildPdfHtml(lines, $('ink') ? $('ink').value : 'auto');
+        if (built.error) { setStatus(built.error, true); return; }
+        var done = false;
+        var finish = function (ok) {
+            if (done) { return; } done = true;
+            if (ok === false) { setStatus('ONLYOFFICE a refusé le collage.', true); return; }
+            setStatus('Formule envoyée (' + lines.length + ' ligne(s)). Rien n\'apparaît ? Clique d\'abord DANS une zone de texte (Modifier PDF → Insertion → Zone de texte), puis recommence.', false);
+            if ($('autoclear').checked) { var m = $('mf'); if (m.setValue) { m.setValue(''); } refreshNoteOpts(); }
+        };
+        try { window.Asc.plugin.executeMethod('PasteHtml', [built.html], finish); }
+        catch (e) { setStatus('Collage impossible : ' + e.message, true); return; }
+        setTimeout(function () { finish(undefined); }, 3000);
+    }
+
+    // Détection : document PDF = API avec des pages, sans AddMathEquation.
+    // ONLYOFFICE ne garde qu'UN rappel de callCommand à la fois : une autre commande lancée juste après
+    // écrase celui-ci. D'où : détection lancée seule au démarrage, puis refaite au clic sur « Insérer » si besoin.
+    M.modeKnown = false;
+    function detectPdf(cb) {
+        window.Asc.plugin.callCommand(function () {
+            try { var d = Api.GetDocument(); return JSON.stringify({ pdf: typeof d.GetPage === 'function' && typeof d.AddMathEquation !== 'function' }); }
+            catch (e) { return JSON.stringify({ pdf: false }); }
+        }, false, false, function (out) {
+            var r = null; try { r = JSON.parse(out); } catch (e) { /* réponse d'une autre commande : ignorée */ }
+            if (r && typeof r.pdf === 'boolean') {
+                M.isPdf = r.pdf;
+                M.modeKnown = true;
+                document.body.classList.toggle('pdf', M.isPdf);
+                if (M.isPdf && M.replaceMode) { M.setReplaceMode(false); }
+            }
+            if (cb) { cb(); }
+        });
+    }
+
     function insertIntoDocument() {
         var mf = $('mf');
         var raw = (mf.getValue ? mf.getValue('latex') : mf.value) || '';
         if (!raw.trim()) { setStatus('Rien à insérer : le champ est vide.', true); return; }
         var lines = M.splitLines(raw);
         if (!lines.length) { setStatus('Rien à insérer : le champ est vide.', true); return; }
+        if (!M.modeKnown) {
+            // Détection perdue au démarrage : on la refait, puis on relance l'insertion (mode « à la suite » conservé)
+            var after = M.afterMode;
+            detectPdf(function () { if (M.modeKnown) { M.afterMode = after; try { insertIntoDocument(); } finally { M.afterMode = false; } } else { setStatus('Type de document non reconnu : réessaie « Insérer ».', true); } });
+            return;
+        }
+        if (M.isPdf) { insertPdf(lines); return; }
         var rt = M.replaceTarget;
         if (M.replaceMode && rt && rt.kind === 'paragraph') { rt = { kind: 'paragraphs', idxs: [rt.idx], jsons: [rt.json] }; }
         if (M.replaceMode && rt && rt.kind === 'paragraphs') {
@@ -690,7 +783,7 @@ window.Matheasy = window.Matheasy || {};
     M.mode = (/[?&]mode=panel/.test(location.search)) ? 'panel' : 'window';
     var cursorTimer = null;
     M.checkCursor = function () {
-        if (M.mode !== 'panel' || M.replaceMode) { return; }
+        if (M.mode !== 'panel' || M.replaceMode || M.isPdf || !M.modeKnown) { return; }
         window.Asc.plugin.callCommand(function () {
             var doc = Api.GetDocument();
             var p = null;
@@ -747,6 +840,11 @@ window.Matheasy = window.Matheasy || {};
             try { d.open = localStorage.getItem('matheasyOpen_' + id) === '1'; } catch (e) { /* ignoré */ }
             d.addEventListener('toggle', function () { try { localStorage.setItem('matheasyOpen_' + id, d.open ? '1' : '0'); } catch (e) { /* ignoré */ } });
         });
+        var dmb = $('dotmul');
+        if (dmb) {
+            try { if (localStorage.getItem('matheasyDotMul') === '0') { dmb.checked = false; } } catch (e) { /* ignoré */ }
+            dmb.addEventListener('change', function () { try { localStorage.setItem('matheasyDotMul', dmb.checked ? '1' : '0'); } catch (e) { /* ignoré */ } });
+        }
         var pv = $('plot-values');
         if (pv) {
             try { pv.checked = localStorage.getItem('matheasyPlotValues') === '1'; } catch (e) { /* ignoré */ }
@@ -793,8 +891,23 @@ window.Matheasy = window.Matheasy || {};
         $('btn-strike').addEventListener('click', function () { annotate(undefined, true); });
         $('btn-nostrike').addEventListener('click', function () { annotate(undefined, false); });
 
-        // À l'ouverture : si une formule est sélectionnée dans le document, on la charge pour modification
-        editSelection(true);
+        // À l'ouverture : d'abord le type de document (PDF ou texte), PUIS seulement la formule éventuellement sélectionnée
+        // (deux commandes simultanées se marchent dessus, voir detectPdf)
+        detectPdf(function () { if (!M.isPdf) { editSelection(true); } });
+        // Si la réponse a été écrasée par une autre commande, on redemande (jusqu'à 3 fois, toutes les 1,5 s)
+        var retries = 0;
+        (function retry() {
+            setTimeout(function () { if (!M.modeKnown && retries++ < 3) { detectPdf(); retry(); } }, 1500);
+        })();
+
+        // Touche * : point de multiplication centré dès la frappe (sinon MathLive garde l'astérisque)
+        try {
+            if (window.customElements && customElements.whenDefined) {
+                customElements.whenDefined('math-field').then(function () {
+                    try { mf.inlineShortcuts = Object.assign({}, mf.inlineShortcuts || {}, { '*': '\\cdot' }); } catch (e) { /* ignoré */ }
+                });
+            }
+        } catch (eS) { /* ignoré */ }
 
         // Le clavier virtuel de MathLive est remplacé par nos palettes
         try { if (window.mathVirtualKeyboard) { window.mathVirtualKeyboard.visible = false; } } catch (e) { /* ignoré */ }

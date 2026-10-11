@@ -182,11 +182,24 @@ window.Matheasy = window.Matheasy || {};
                 var doc = Api.GetDocument();
                 try {
                     var img = Api.CreateImage(Asc.scope.ggbPng, 105 * 36000, 71.6 * 36000);
+                    if (typeof doc.GetCurrentParagraph !== 'function' && typeof doc.GetPage === 'function') {
+                        // PDF : image posée sur la page qui contient la sélection (sinon la 1re), à déplacer en mode Modifier PDF
+                        var page = null, n = doc.GetPagesCount ? doc.GetPagesCount() : 1, k = 0;
+                        for (var i = 0; i < n && !page; i++) { try { var pg = doc.GetPage(i); if (pg.GetSelectedText && pg.GetSelectedText()) { page = pg; k = i; } } catch (e1) { /* ignoré */ } }
+                        if (!page) { page = doc.GetPage(0); }
+                        page.AddObject(img);
+                        img.SetPosition(25 * 36000, 40 * 36000);
+                        return 'ok-pdf:' + (k + 1);
+                    }
                     var p = doc.GetCurrentParagraph();
                     p.AddDrawing(img);
                     return 'ok';
                 } catch (e) { return 'ERREUR : ' + e.message; }
-            }, false, true, function (res) { say(res === 'ok' ? 'Graphique inséré dans le document.' : 'Insertion de l\'image : ' + res, res !== 'ok'); });
+            }, false, true, function (res) {
+                if (res === 'ok') { say('Graphique inséré dans le document.', false); return; }
+                if (/^ok-pdf:/.test(String(res))) { say('Graphique posé sur la page ' + String(res).slice(7) + ', à 25 mm du bord gauche et 40 mm du haut. Déplace-le en mode Modifier PDF.', false); return; }
+                say('Insertion de l\'image : ' + res, true);
+            });
         });
         $('ggb-open').addEventListener('click', function () {
             var cmd = $('ggb-cmd').value || currentCommand();
