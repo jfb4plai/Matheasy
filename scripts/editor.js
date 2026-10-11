@@ -376,7 +376,9 @@ window.Matheasy = window.Matheasy || {};
     //      traduit selon le clavier qu'il croit détecter ; il ne connaît pas le clavier belge et peut se croire en
     //      QWERTY américain. Sur AZERTY BE, la touche « = » est à la place du « / » américain -> MathLive crée une
     //      fraction (signalé par JF le 2026-10-11). On insère alors nous-mêmes le caractère réellement tapé. ----
-    var US_KEY = { Slash: ['/', '?'], Digit6: ['6', '^'], Minus: ['-', '_'] }; // positions qui déclenchent fraction, exposant, indice
+    // Seule la touche « = » / « + » est concernée. Étendre l'interception à « ) » (code Minus) a cassé la fermeture
+    // des parenthèses dans un essai réel (structure empilée, « \right. » dans Word) : ne PAS l'étendre sans essai sur clavier belge.
+    var US_KEY = { Slash: ['/', '?'] };
     M.fixLayoutKey = function (ev, field) {
         var us = US_KEY[ev.code];
         if (!us || ev.ctrlKey || ev.metaKey || ev.altKey || !ev.key || ev.key.length !== 1) { return false; }
