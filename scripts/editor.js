@@ -921,6 +921,10 @@ window.Matheasy = window.Matheasy || {};
             if (window.customElements && customElements.whenDefined) {
                 customElements.whenDefined('math-field').then(function () {
                     try { mf.inlineShortcuts = Object.assign({}, mf.inlineShortcuts || {}, { '*': '\\cdot' }); } catch (e) { /* ignoré */ }
+                    // Barre d'espace = vrai espace (« si x = −9 ») ; par défaut MathLive l'ignore et s'en sert pour sortir
+                    // d'une fraction : on en sort désormais avec la flèche → (demande JF 2026-10-11)
+                    // « \; » et pas « \ » : MathLive écrit « \ » collé à la lettre suivante (« si\x »), commande inconnue
+                    try { mf.mathModeSpace = '\\;'; } catch (e2) { /* ignoré */ }
                 });
             }
         } catch (eS) { /* ignoré */ }
