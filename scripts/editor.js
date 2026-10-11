@@ -82,6 +82,8 @@ window.Matheasy = window.Matheasy || {};
         out = out.replace(/\\overrightarrow\{/g, '\\vec{');
         out = out.replace(/\\differentialD/g, 'd');
         out = out.replace(/(^|[^\\])\*/g, '$1\\cdot '); // astérisque tapé au clavier -> point de multiplication (secondaire)
+        // Espaces : ONLYOFFICE affiche tels quels « \, \: \; ~ » et avale l'espace ordinaire ; il accepte « \ » (essais SP01-SP12, JF 2026-10-11)
+        out = out.replace(/(?<!\\)\\[,:;]\s*/g, '\\ ').replace(/(^|[^\\])~/g, '$1\\ ');
         out = out.replace(/\\mleft/g, '\\left').replace(/\\mright/g, '\\right');
         // Option « Le point du clavier = multiplication » (cochée par défaut, décision JF 2026-10-11)
         var dm = document.getElementById('dotmul');
@@ -392,10 +394,19 @@ window.Matheasy = window.Matheasy || {};
 
     function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
+    // LaTeX -> contenu MathML (MathLive). Les espaces (<mspace>) deviennent un espace insécable en texte :
+    // l'espace insécable est accepté par ONLYOFFICE dans Word (essai SP07) ; à vérifier dans un PDF.
+    function toMathml(latex) {
+        return window.MathLive.convertLatexToMathMl(M.sanitizeLatex(latex))
+            .replace(/<mo>&#8290;<\/mo>/g, '')
+            .replace(/<mspace[^>]*\/>/g, '<mtext>&#160;</mtext>')
+            .replace(/>((?:&nbsp;|\u00A0)+)</g, '><mtext>&#160;</mtext><'); // espace « nu » entre deux balises
+    }
+
     // LaTeX d'une ligne -> élément <math> (MathLive), ou null si MathLive est indisponible
     M.latexToMathml = function (latex, color) {
         if (!window.MathLive || typeof window.MathLive.convertLatexToMathMl !== 'function') { return null; }
-        var inner = window.MathLive.convertLatexToMathMl(M.sanitizeLatex(latex)).replace(/<mo>&#8290;<\/mo>/g, '');
+        var inner = toMathml(latex);
         var attr = color ? ' mathcolor="' + color + '"' : '';
         return '<math xmlns="http://www.w3.org/1998/Math/MathML"' + attr + '>' + inner + '</math>';
     };
@@ -404,7 +415,7 @@ window.Matheasy = window.Matheasy || {};
 
     // Contenu MathML d'une ligne, sans l'enveloppe <math>
     function lineInnerMathml(latex) {
-        return window.MathLive.convertLatexToMathMl(M.sanitizeLatex(latex)).replace(/<mo>&#8290;<\/mo>/g, '');
+        return toMathml(latex);
     }
 
     // Plusieurs lignes (essais JF 2026-10-10/11) : des <math> ou des <p> collés séparément sont fusionnés, ou éclatés en
