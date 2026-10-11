@@ -1,6 +1,6 @@
 # Matheasy
 
-Plugin [ONLYOFFICE](https://www.onlyoffice.com/) gratuit pour écrire et annoter des notations mathématiques, pensé comme pendant libre de MathType pour les Desktop Editors. Cible : enseignants et élèves, avec priorité au secondaire supérieur (FWB).
+Plugin [ONLYOFFICE](https://www.onlyoffice.com/) gratuit pour écrire et annoter des notations mathématiques dans les Desktop Editors. Cible : enseignants et élèves, avec priorité au secondaire supérieur (FWB).
 
 Compagnon de [Colorisation PLAI](https://github.com/jfb4plai/colorisation-plai-onlyoffice) : même architecture (plugin JS, manifeste `config.json`, hébergement statique).
 
