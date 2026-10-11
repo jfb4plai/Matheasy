@@ -372,6 +372,18 @@ window.Matheasy = window.Matheasy || {};
         });
     }
 
+    // ---- Clavier belge (AZERTY BE) : MathLive lit certaines touches par leur POSITION physique (event.code) et la
+    //      traduit selon le clavier qu'il croit détecter ; il ne connaît pas le clavier belge et peut se croire en
+    //      QWERTY américain. Sur AZERTY BE, la touche « = » est à la place du « / » américain -> MathLive crée une
+    //      fraction (signalé par JF le 2026-10-11). On insère alors nous-mêmes le caractère réellement tapé. ----
+    var US_KEY = { Slash: ['/', '?'], Digit6: ['6', '^'], Minus: ['-', '_'] }; // positions qui déclenchent fraction, exposant, indice
+    M.fixLayoutKey = function (ev, field) {
+        var us = US_KEY[ev.code];
+        if (!us || ev.ctrlKey || ev.metaKey || ev.altKey || !ev.key || ev.key.length !== 1) { return false; }
+        if (ev.key === us[ev.shiftKey ? 1 : 0]) { return false; } // le caractère tapé correspond : MathLive fait juste
+        try { field.executeCommand(['typedText', ev.key]); return true; } catch (e) { return false; }
+    };
+
     // ---- Mode PDF : l'API PDF n'a pas AddMathEquation ; une formule MathML collée dans une zone de texte
     //      devient une équation native d'ONLYOFFICE (vérifié le 2026-10-10, modifiable après réouverture) ----
     M.isPdf = false;
@@ -873,7 +885,9 @@ window.Matheasy = window.Matheasy || {};
                 ev.preventDefault();
                 ev.stopPropagation();
                 newLine();
+                return;
             }
+            if (M.fixLayoutKey(ev, mf)) { ev.preventDefault(); ev.stopPropagation(); }
         }, true);
         refreshNoteOpts();
         $('btn-edit').addEventListener('click', function () { editSelection(false); });
